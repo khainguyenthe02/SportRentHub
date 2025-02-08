@@ -12,6 +12,7 @@ namespace SportRentHub.Repositories.Interfaces
         Task<User> GetById(int id);
         Task<List<User>> Search(UserSearchDto search);
         Task<User> GetByUsername(string username);
+        Task<User> GetByEmail(string email);
         Task<User> Login(string email, string password);
     }
 }

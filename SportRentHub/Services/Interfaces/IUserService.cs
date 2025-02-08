@@ -11,6 +11,8 @@ namespace SportRentHub.Services.Interfaces
         Task<UserDto> GetById(int id);
         Task<bool> Update(UserUpdateDto update);
         Task<List<UserDto>> Search(UserSearchDto search);
+        Task<UserDto> GetByUsername(string username);
+        Task<UserDto> GetByEmail(string email);
         Task<UserDto> Login(AuthRequestDto loginRequest);
     }
 }

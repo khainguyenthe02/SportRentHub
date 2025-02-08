@@ -42,6 +42,15 @@ namespace SportRentHub.Repositories
             return userList;
         }
 
+        public async Task<User> GetByEmail(string email)
+        {
+            var user = await _dbService.GetAsync<User>(
+                "SELECT * FROM tbl_user WHERE email = @Email",
+                new { Email = email }
+            );
+            return user;
+        }
+
         public async Task<User> GetById(int id)
         {
             var user = await _dbService.GetAsync<User>(

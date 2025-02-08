@@ -179,5 +179,43 @@ namespace SportRentHub.Services
                 throw;
             }
         }
+
+        public async Task<UserDto> GetByUsername(string username)
+        {
+            try
+            {
+                var result = await _repositoryManager.UserRepository.GetByUsername(username);
+                if (result != null)
+                {
+                    var dto = result?.Adapt<UserDto>();
+                    return (await FilterData(new() { dto })).FirstOrDefault();
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Log.Error("[UserService] Lỗi khi lấy dữ liệu với username: {Id}", username, ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<UserDto> GetByEmail(string email)
+        {
+            try
+            {
+                var result = await _repositoryManager.UserRepository.GetByEmail(email);
+                if (result != null)
+                {
+                    var dto = result?.Adapt<UserDto>();
+                    return (await FilterData(new() { dto })).FirstOrDefault();
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Log.Error("[UserService] Lỗi khi lấy dữ liệu với email: {Id}", email, ex.Message);
+                throw;
+            }
+        }
     }
 }
