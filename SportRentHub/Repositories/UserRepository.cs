@@ -17,8 +17,8 @@ namespace SportRentHub.Repositories
         public async Task<bool> Create(User user)
         {
             var result = await _dbService.EditData(
-                "INSERT INTO tbl_user (username, password, fullname, phone_number, address, email, role, create_time, last_login) " +
-                "VALUES (@Username, @Password, @Fullname, @PhoneNumber, @Address, @Email, @Role, @CreateTime, @LastLogin)",
+                "INSERT INTO tbl_user (username, password, fullname, phone_number, address, email, role, create_time, last_login, salt) " +
+                "VALUES (@Username, @Password, @Fullname, @PhoneNumber, @Address, @Email, @Role, @CreateTime, @LastLogin, @Salt)",
                 user);
 
             return result > 0;

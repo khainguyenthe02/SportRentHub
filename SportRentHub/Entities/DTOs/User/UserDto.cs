@@ -10,7 +10,7 @@
         public string Address { get; set; }
         public int Role { get; set; }
         public string RoleName { get; set; }
-        public DateTime CreateDate { get; set; }
+        public DateTime CreateTime { get; set; }
         public DateTime LastLogin { get; set; }
     }
 }

@@ -8,7 +8,8 @@ namespace SportRentHub.SqlDBHelper
         private readonly string _connectionString;
         public DbServices(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("SportRentHub");
+
+            _connectionString = configuration.GetValue<string>("ConnectionStrings:SportRentHub", "localhost:7110");
         }
         public async Task<int> EditData(string command, object parms)
         {
@@ -25,11 +26,6 @@ namespace SportRentHub.SqlDBHelper
                 Log.Error(ex, "Error in EditData. Command: {Command}, Params: {@Params}", command, parms);
                 throw;
             }
-        }
-
-        public Task<int> ExecuteScalar(string command, object parms)
-        {
-            throw new NotImplementedException();
         }
 
         public async Task<List<T>> GetAll<T>(string command, object parms)
