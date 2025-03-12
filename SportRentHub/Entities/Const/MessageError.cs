@@ -18,6 +18,9 @@
         public const string TypeEmailError = "Email không đúng định dạng";
         public const string EmailExist = "Email đã tồn tại trên hệ thống";
         public const string EmailNotExist = "Email không tồn tại trên hệ thống";
+        public const string InvalidUser = "Không tìm thấy người dùng";
+        public const string EmailSendFailed = "Gửi email thất bại.";
+        public const string InvalidToken = "Token không hợp lệ.";
 
         public const string IDNotExist = "ID không tồn tại trên hệ thống";
 

@@ -18,14 +18,16 @@ CREATE TABLE tbl_court (
 CREATE TABLE tbl_user (
     id INT IDENTITY(1,1) PRIMARY KEY,
     username VARCHAR(50),
-    password VARCHAR(50),
+    password VARCHAR(100),
     fullname VARCHAR(50),
     phone_number VARCHAR(11),
     address NVARCHAR(255),
     email VARCHAR(50),
     role INT,
     create_time DATETIME,
-    last_login DATETIME
+    last_login DATETIME,
+    salt varchar(30),
+    token varchar(255)
 );
 
 CREATE TABLE tbl_booking (

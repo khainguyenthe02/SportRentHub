@@ -17,8 +17,8 @@ namespace SportRentHub.Repositories
         public async Task<bool> Create(User user)
         {
             var result = await _dbService.EditData(
-                "INSERT INTO tbl_user (username, password, fullname, phone_number, address, email, role, create_time, last_login, salt) " +
-                "VALUES (@Username, @Password, @Fullname, @PhoneNumber, @Address, @Email, @Role, @CreateTime, @LastLogin, @Salt)",
+                "INSERT INTO tbl_user (username, password, fullname, phone_number, address, email, role, create_time, last_login, salt, token) " +
+                "VALUES (@Username, @Password, @Fullname, @PhoneNumber, @Address, @Email, @Role, @CreateTime, @LastLogin, @Salt, @Token)",
                 user);
 
             return result > 0;
@@ -36,7 +36,7 @@ namespace SportRentHub.Repositories
         public async Task<List<User>> GetAll()
         {
             var userList = await _dbService.GetAll<User>(
-                "SELECT * FROM tbl_user",
+                "SELECT * FROM tbl_user ORDER BY id DESC",
                 new { }
             );
             return userList;
@@ -109,45 +109,62 @@ namespace SportRentHub.Repositories
                 whereSql += " AND id IN @IdLst";
             }
 
-            whereSql += " ORDER BY create_time DESC";
+            whereSql += " ORDER BY id DESC";
 
             var userList = await _dbService.GetAll<User>(selectSql + whereSql, search);
             return userList;
         }
 
-        public async Task<bool> Update(User user)
+        public async Task<bool> Update(User update)
         {
+            var hasChanged = false;
             var updateSql = "UPDATE tbl_user SET ";
 
-            if (!string.IsNullOrEmpty(user.Username))
+            if (!string.IsNullOrEmpty(update.Username))
             {
                 updateSql += "username = @Username, ";
+                hasChanged = true;
             }
-            if (!string.IsNullOrEmpty(user.Password))
+            if (!string.IsNullOrEmpty(update.Password))
             {
                 updateSql += "password = @Password, ";
+                hasChanged = true;
             }
-            if (user.Fullname != null)
+            if (update.Fullname != null)
             {
                 updateSql += "fullname = @Fullname, ";
+                hasChanged = true;
             }
-            if (user.PhoneNumber != null)
+            if (update.PhoneNumber != null)
             {
                 updateSql += "phone_number = @PhoneNumber, ";
+                hasChanged = true;
             }
-            if (user.Address != null)
+            if (update.Address != null)
             {
                 updateSql += "address = @Address, ";
+                hasChanged = true;
             }
-            if (user.Email != null)
+            if (update.Email != null)
             {
                 updateSql += "email = @Email, ";
+                hasChanged = true;
             }
-            if (user.Role != 0)
+            if (update.Role != 0)
             {
                 updateSql += "role = @Role, ";
+                hasChanged = true;
             }
-            
+            if (update.Token != null)
+            {
+                updateSql += "token = @Token, ";
+                hasChanged = true;
+            }
+            if (!hasChanged)
+            {
+                return false;
+            }
+
             if (updateSql.EndsWith(", "))
             {
                 updateSql = updateSql.Remove(updateSql.Length - 2);
@@ -155,7 +172,7 @@ namespace SportRentHub.Repositories
 
             updateSql += " WHERE id = @Id";
 
-            var result = await _dbService.EditData(updateSql, user);
+            var result = await _dbService.EditData(updateSql, update);
             return result > 0;
         }
     }

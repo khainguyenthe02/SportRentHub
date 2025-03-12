@@ -13,6 +13,7 @@
         public DateTime? CreateTime { get; set; }
         public DateTime? LastLogin { get; set; }
         public string Salt { get; set; }
+        public string Token { get; set; }
 
     }
 }

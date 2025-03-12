@@ -9,6 +9,5 @@
         public string? Email { get; set; }
         public string? Address { get; set; }
         public int? Role { get; set; }
-        public string? Salt { get; set; }
     }
 }
