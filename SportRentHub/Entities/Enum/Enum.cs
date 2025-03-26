@@ -12,4 +12,9 @@
         COURT = 1,
         USER = 2
     }
+    public enum CourtStatus
+    {
+        UN_PAID,
+        PAID
+    }
 }

@@ -17,8 +17,8 @@ namespace SportRentHub.Repositories
         public async Task<bool> Create(User user)
         {
             var result = await _dbService.EditData(
-                "INSERT INTO tbl_user (username, password, fullname, phone_number, address, email, role, create_time, last_login, salt, token) " +
-                "VALUES (@Username, @Password, @Fullname, @PhoneNumber, @Address, @Email, @Role, @CreateTime, @LastLogin, @Salt, @Token)",
+                "INSERT INTO tbl_user (username, password, fullname, phone_number, address, email, role, create_date, last_login, salt, token) " +
+                "VALUES (@Username, @Password, @Fullname, @PhoneNumber, @Address, @Email, @Role, @CreateDate, @LastLogin, @Salt, @Token)",
                 user);
 
             return result > 0;
@@ -87,6 +87,10 @@ namespace SportRentHub.Repositories
         {
             var selectSql = "SELECT * FROM tbl_user ";
             var whereSql = " WHERE 1=1 ";
+            if (search.IdLst != null && search.IdLst.Any())
+            {
+                whereSql += " and id IN @IdLst";
+            }
 
             if (search.Id != null)
             {
@@ -94,11 +98,11 @@ namespace SportRentHub.Repositories
             }
             if (!string.IsNullOrEmpty(search.Email))
             {
-                whereSql += " AND email LIKE @Email";
+                whereSql += " AND email = @Email";
             }
             if (!string.IsNullOrEmpty(search.PhoneNumber))
             {
-                whereSql += " AND phone_number LIKE @PhoneNumber";
+                whereSql += " AND phone_number = @PhoneNumber";
             }
             if (search.Role != null)
             {

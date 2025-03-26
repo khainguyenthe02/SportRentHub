@@ -5,12 +5,24 @@ using SportRentHub.Services.Interfaces;
 using SportRentHub.Services;
 using ERBeeVisionMaster.Entities.Extensions;
 using Microsoft.OpenApi.Models;
+using Mapster;
+using Microsoft.Extensions.Hosting;
+using SportRentHub.Entities.Models;
+using SportRentHub.Entities.DTOs.Court;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+//Maspster configuration 
+TypeAdapterConfig<Court, CourtDto>.NewConfig()
+    .Ignore(dest => dest.Images);
+TypeAdapterConfig<Court, CourtDto>.NewConfig()
+    .Map(court => court.Images, courtDto => !string.IsNullOrEmpty(courtDto.Images)
+        ? courtDto.Images.Split(new[] { ',' }, StringSplitOptions.None).ToList()
+        : new List<string>());
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -65,6 +77,7 @@ app.UseCors("policy");
 
 app.UseSwagger();
 app.UseSwaggerUI();
+app.UseDeveloperExceptionPage();
 
 
 app.UseHttpsRedirection();

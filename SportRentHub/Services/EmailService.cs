@@ -32,7 +32,7 @@ namespace SportRentHub.Services
                     Credentials = credentials,
                     EnableSsl = true,
                     DeliveryMethod = SmtpDeliveryMethod.Network,
-                    Timeout = 5 // 5 giây timeout
+                    Timeout = 5000 // 5 giây timeout
                 })
                 {
                     var mailMessage = new MailMessage
@@ -44,11 +44,11 @@ namespace SportRentHub.Services
                     };
                     mailMessage.To.Add(to);
 
-                    Log.Information($" Đang gửi email đến: {to}, Chủ đề: {subject}");
+                    Log.Warning($" Đang gửi email đến: {to}, Chủ đề: {subject}");
 
                     await smtpClient.SendMailAsync(mailMessage);
 
-                    Log.Information(" Email đã gửi thành công!");
+                    Log.Warning(" Email đã gửi thành công!");
                     return true;
                 }
             }

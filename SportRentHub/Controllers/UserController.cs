@@ -58,21 +58,22 @@ namespace SportRentHub.Controllers
                 {
                     return BadRequest(MessageError.EmailExist);
                 }
-                if (createUserDto.Password == null)
-                {
-                    return BadRequest(MessageError.InvalidPasswordError);
-                }
-                if (!Validate.ValidatePasword(createUserDto.Password))
-                {
-                    return BadRequest(MessageError.TypingPasswordError);
-                }
-                var result = await _serviceManager.UserService.Create(createUserDto);
-                if (result)
-                {
-                    return Ok();
-                }
             }
-            return BadRequest(MessageError.ErrorCreate);
+            if (createUserDto.Password == null)
+            {
+                return BadRequest(MessageError.InvalidPasswordError);
+            }
+            if (!Validate.ValidatePasword(createUserDto.Password))
+            {
+                return BadRequest(MessageError.TypingPasswordError);
+            }
+            var result = await _serviceManager.UserService.Create(createUserDto);
+            if (!result) return BadRequest(MessageError.ErrorCreate);
+
+            var lst = new List<UserDto>();
+            lst = await _serviceManager.UserService.GetAll();
+            if (!lst.Any()) return BadRequest(MessageError.ErrorCreate);
+            return Ok(lst[0]);
         }
         [HttpPost("login")]
         [AllowAnonymous]
@@ -152,7 +153,7 @@ namespace SportRentHub.Controllers
         {
             // Kiểm tra user có trùng hay không
             var userDto = await _serviceManager.UserService.GetById(updateUserDto.Id);
-            if (userDto == null) return StatusCode((int)HttpStatusCode.BadRequest, "Người dùng không tồn tại");
+            if (userDto == null) return BadRequest(MessageError.InvalidUser);
             if (await _serviceManager.UserService.Update(updateUserDto))
             {
                 return Ok();
@@ -197,7 +198,8 @@ namespace SportRentHub.Controllers
             Console.WriteLine(resetToken);
 
             // Gửi email với liên kết reset password
-            string resetLink = $"{CommonConst.FE_URL}reset-password?token={resetToken}";
+            var feUrl = _config["Frontend:FE_URL_RESET"];
+            string resetLink = $"{feUrl}reset-password?token={resetToken}";
             bool emailSent = await _serviceManager.EmailService.SendEmail(
                 to: userDto.Email,
                 subject: "Admin - Đặt lại mật khẩu tài khoản",

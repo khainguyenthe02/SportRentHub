@@ -9,7 +9,8 @@ namespace SportRentHub.SqlDBHelper
         public DbServices(IConfiguration configuration)
         {
 
-            _connectionString = configuration.GetValue<string>("ConnectionStrings:SportRentHub", "localhost:7110");
+            _connectionString = configuration.GetConnectionString("SportRentHub");
+
         }
         public async Task<int> EditData(string command, object parms)
         {

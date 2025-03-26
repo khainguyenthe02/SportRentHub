@@ -2,7 +2,11 @@
 {
     public interface IServiceManager
     {
-        public IUserService UserService { get; }
+        IUserService UserService { get; }
         IEmailService EmailService { get; }
+        ICourtService CourtService { get; }
+        IReviewService ReviewService { get; }
+        IBookingService BookingService { get; }
+        IPaymentService PaymentService { get; }
     }
 }

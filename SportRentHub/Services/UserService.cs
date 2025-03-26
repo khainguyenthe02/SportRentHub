@@ -20,7 +20,7 @@ namespace SportRentHub.Services
             try
             {
                 var user = create.Adapt<User>();
-                user.CreateTime = DateTime.Now;
+                user.CreateDate = DateTime.Now;
                 user.LastLogin = DateTime.Now;
                 // hash password + salt
                 var salt = Utils.Convert.GenerateSalt();
