@@ -149,7 +149,7 @@ namespace SportRentHub.Services
                         IdLst = bookingIdLst,
                     };
                     var bookingLst = (await _repositoryManager.BookingRepository.Search(searchBooking))
-                        .ToDictionary(b => b.Id, b => b.CourtId);
+                        .ToDictionary(b => b.Id, b => b.ChildCourtId);
 
                     var courtIdLst = bookingLst.Values.Distinct().ToList();
                     if (courtIdLst.Any())

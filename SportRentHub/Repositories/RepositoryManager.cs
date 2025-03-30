@@ -2,13 +2,14 @@
 
 namespace SportRentHub.Repositories
 {
-    public class RepositoryManager : IRepositoryManager
+	public class RepositoryManager : IRepositoryManager
     {
         private readonly Lazy<IUserRepository> _lazyUserRepository;
         private readonly Lazy<ICourtRepository> _lazyCourtRepository;
         private readonly Lazy<IReviewRepository> _lazyReviewRepository;
         private readonly Lazy<IBookingRepository> _lazyBookingRepository;
         private readonly Lazy<IPaymentRepository> _lazyPaymentRepository;
+        private readonly Lazy<IChildCourtRepository> _lazyChildCourtRepository;
         public RepositoryManager (IConfiguration configuration)
         {
             _lazyUserRepository = new Lazy<IUserRepository>(() => new UserRepository(configuration));
@@ -16,6 +17,7 @@ namespace SportRentHub.Repositories
             _lazyReviewRepository = new Lazy<IReviewRepository>(() => new ReviewRepository(configuration));
             _lazyBookingRepository = new Lazy<IBookingRepository>(() => new BookingRepository(configuration));
             _lazyPaymentRepository = new Lazy<IPaymentRepository>(() => new PaymentRepository(configuration));
+            _lazyChildCourtRepository = new Lazy<IChildCourtRepository>(() => new ChildCourtRepository(configuration));
         }
         public IUserRepository UserRepository => _lazyUserRepository.Value;
 
@@ -26,5 +28,7 @@ namespace SportRentHub.Repositories
         public IBookingRepository BookingRepository => _lazyBookingRepository.Value;
 
         public IPaymentRepository PaymentRepository => _lazyPaymentRepository.Value;
-    }
+
+		public IChildCourtRepository ChildCourtRepository => _lazyChildCourtRepository.Value;
+	}
 }

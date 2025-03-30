@@ -16,12 +16,22 @@ CREATE TABLE tbl_court (
   status INT
 )
 GO
+CREATE TABLE tbl_child_court
+(
+  id INT IDENTITY(1,1) PRIMARY KEY,
+  court_id INT,
+  child_court_name nvarchar(100),
+  child_court_description NVARCHAR(255),
+  position nvarchar(100),
+  rent_cost FLOAT
+)
+GO
 
 CREATE TABLE tbl_user (
   id INT IDENTITY(1,1) PRIMARY KEY,
   username VARCHAR(50),
   password VARCHAR(100),
-  fullname NVARCHAR(50),
+  fullname NVARCHAR(100),
   phone_number VARCHAR(11),
   address NVARCHAR(255),
   email VARCHAR(50),
@@ -36,11 +46,10 @@ GO
 CREATE TABLE tbl_booking (
   id INT IDENTITY(1,1) PRIMARY KEY,
   user_id INT,
-  court_id INT,
+  child_court_id INT,
   create_date DATETIME,
-  booking_date DATETIME,
-  start_time TIME,
-  end_time TIME,
+  start_time DATETIME,
+  end_time DATETIME,
   status INT,
   price float
 )

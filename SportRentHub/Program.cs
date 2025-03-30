@@ -9,8 +9,12 @@ using Mapster;
 using Microsoft.Extensions.Hosting;
 using SportRentHub.Entities.Models;
 using SportRentHub.Entities.DTOs.Court;
+using SportRentHub.Entities.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.ConfigureLogging();
+
 
 // Add services to the container.
 
@@ -63,7 +67,7 @@ builder.Services.AddCors(option =>
 {
     option.AddPolicy("policy", builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyHeader().AllowAnyMethod());
 });
-
+builder.Services.ConfigureJwt(builder.Configuration);
 
 builder.Services.AddSingleton<IServiceManager, ServiceManager>();
 builder.Services.AddSingleton<IRepositoryManager, RepositoryManager>();

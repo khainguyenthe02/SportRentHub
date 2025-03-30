@@ -8,5 +8,6 @@
         IReviewService ReviewService { get; }
         IBookingService BookingService { get; }
         IPaymentService PaymentService { get; }
+        IChildCourtService ChildCourtService { get; }
     }
 }

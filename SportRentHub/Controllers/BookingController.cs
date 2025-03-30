@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SportRentHub.Entities.Const;
 using SportRentHub.Entities.DTOs.Booking;
@@ -30,6 +31,7 @@ namespace SportRentHub.Controllers
         }
 
         [HttpGet("get-list")]
+        
         public async Task<IActionResult> GetBookings()
         {
             var bookings = await _serviceManager.BookingService.GetAll();
@@ -81,5 +83,13 @@ namespace SportRentHub.Controllers
             await _serviceManager.BookingService.Delete(id);
             return Ok();
         }
+        [HttpPost("search")]
+        public async Task<IActionResult> Search(BookingSearchDto search)
+        {
+            var searchList = await _serviceManager.BookingService.Search(search);
+            if (!searchList.Any()) return Ok(searchList);
+            return Ok(searchList);
+        }
+            
     }
 }

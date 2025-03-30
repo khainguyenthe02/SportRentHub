@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using SportRentHub.Entities.Const;
+using SportRentHub.Entities.DTOs.Booking;
 using SportRentHub.Entities.DTOs.User;
 using SportRentHub.Entities.Extensions;
 using SportRentHub.Services.Interfaces;
@@ -59,7 +60,15 @@ namespace SportRentHub.Controllers
                     return BadRequest(MessageError.EmailExist);
                 }
             }
-            if (createUserDto.Password == null)
+			if (createUserDto.Username != null)
+			{
+				var userDto = await _serviceManager.UserService.GetByUsername(createUserDto.Username);
+				if (userDto != null)
+				{
+					return BadRequest("Username đã tồn tại");
+				}
+			}
+			if (createUserDto.Password == null)
             {
                 return BadRequest(MessageError.InvalidPasswordError);
             }
@@ -160,7 +169,31 @@ namespace SportRentHub.Controllers
             }
             return BadRequest(MessageError.ErrorUpdate);
         }
-        [HttpPost("forgot-password")]
+        [HttpGet("Logout")]
+        [Authorize()]
+        public async Task<IActionResult> Logout()
+        {
+			var userId = User.FindFirstValue("employeeId");
+			if (string.IsNullOrEmpty(userId) || !int.TryParse(userId, out var userID))
+			{
+				return BadRequest("Không thể tìm thấy người dùng");
+			}
+			var updateNullToken = new UserUpdateDto
+			{
+				Id = int.Parse(userId),
+				Token = "",
+			};
+			await _serviceManager.UserService.Update(updateNullToken);
+			return Ok("Đã đăng xuất thành công.");
+		}
+		[HttpPost("search")]
+		public async Task<IActionResult> Search(UserSearchDto search)
+		{
+			var searchList = await _serviceManager.UserService.Search(search);
+			if (!searchList.Any()) return Ok(searchList);
+			return Ok(searchList);
+		}
+		[HttpPost("forgot-password")]
         [AllowAnonymous]
         public async Task<IActionResult> ForgotPassword([FromForm] string email)
         {

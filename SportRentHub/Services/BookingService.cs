@@ -1,6 +1,7 @@
 ﻿using Mapster;
 using Serilog;
 using SportRentHub.Entities.DTOs.Booking;
+using SportRentHub.Entities.DTOs.ChildCourt;
 using SportRentHub.Entities.DTOs.Court;
 using SportRentHub.Entities.DTOs.User;
 using SportRentHub.Entities.Models;
@@ -139,23 +140,23 @@ namespace SportRentHub.Services
                         }
                     }
                 }
-                //adapter court
-                var courtIdLst = lst.Where(item => item.CourtId != 0).Select(item => item.CourtId).ToList();
-                if (courtIdLst.Any())
+                //adapter child_court
+                var childCourtIdLst = lst.Where(item => item.ChildCourtId != 0).Select(item => item.ChildCourtId).ToList();
+                if (childCourtIdLst.Any())
                 {
-                    var searchCourt = new CourtSearchDto
+                    var searchChildCourt = new ChildCourtSearchDto
                     {
-                        IdLst = courtIdLst,
+                        IdLst = childCourtIdLst,
                     };
-                    var courtLst = (await _repositoryManager.CourtRepository.Search(searchCourt))
-                        .ToDictionary(c => c.Id, c => (c.CourtName));
-                    if (courtLst.Any())
+                    var childCourtLst = (await _repositoryManager.ChildCourtRepository.Search(searchChildCourt))
+                        .ToDictionary(c => c.Id, c => (c.ChildCourtName));
+                    if (childCourtLst.Any())
                     {
                         foreach (var item in lst)
                         {
-                            if (item.CourtId != 0 && courtLst.ContainsKey(item.CourtId))
+                            if (item.ChildCourtId != 0 && childCourtLst.ContainsKey(item.ChildCourtId))
                             {
-                                item.CourtName = courtLst[item.CourtId];
+                                item.ChildCourtName = childCourtLst[item.ChildCourtId];
                             }
                         }
                     }

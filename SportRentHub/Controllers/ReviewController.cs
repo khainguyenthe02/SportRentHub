@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SportRentHub.Entities.Const;
+using SportRentHub.Entities.DTOs.Booking;
 using SportRentHub.Entities.DTOs.Review;
 using SportRentHub.Entities.DTOs.User;
 using SportRentHub.Services.Interfaces;
@@ -82,5 +83,12 @@ namespace SportRentHub.Controllers
             await _serviceManager.ReviewService.Delete(id);
             return Ok();
         }
-    }
+		[HttpPost("search")]
+		public async Task<IActionResult> Search(ReviewSearchDto search)
+		{
+			var searchList = await _serviceManager.ReviewService.Search(search);
+			if (!searchList.Any()) return Ok(searchList);
+			return Ok(searchList);
+		}
+	}
 }

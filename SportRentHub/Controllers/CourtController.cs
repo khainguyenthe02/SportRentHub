@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SportRentHub.Entities.Const;
+using SportRentHub.Entities.DTOs.Booking;
+using SportRentHub.Entities.DTOs.ChildCourt;
 using SportRentHub.Entities.DTOs.Court;
 using SportRentHub.Entities.DTOs.User;
 using SportRentHub.Services.Interfaces;
@@ -26,6 +28,11 @@ namespace SportRentHub.Controllers
             {
                 return StatusCode((int)HttpStatusCode.NoContent);
             }
+            var childLst = await _serviceManager.ChildCourtService.Search(new ChildCourtSearchDto { CourtId = courtDto.Id });
+            if (childLst.Any())
+            {
+                courtDto.ChildLst = childLst;
+            }
             return Ok(courtDto);
         }
 
@@ -33,7 +40,16 @@ namespace SportRentHub.Controllers
         public async Task<IActionResult> GetCourts()
         {
             var courts = await _serviceManager.CourtService.GetAll();
-            return Ok(courts ?? new List<CourtDto>());
+            if(!courts.Any()) return Ok(courts);
+            foreach (var item in courts)
+            {
+				var childLst = await _serviceManager.ChildCourtService.Search(new ChildCourtSearchDto { CourtId = item.Id });
+				if (childLst.Any())
+				{
+					item.ChildLst = childLst;
+				}
+			}
+            return Ok(courts);
         }
 
         [HttpPost("create")]
@@ -81,5 +97,12 @@ namespace SportRentHub.Controllers
             await _serviceManager.CourtService.Delete(id);
             return Ok();
         }
-    }
+		[HttpPost("search")]
+		public async Task<IActionResult> Search(CourtSearchDto search)
+		{
+			var searchList = await _serviceManager.CourtService.Search(search);
+			if (!searchList.Any()) return Ok(searchList);
+			return Ok(searchList);
+		}
+	}
 }

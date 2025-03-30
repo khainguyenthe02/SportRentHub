@@ -1,4 +1,6 @@
-﻿namespace SportRentHub.Entities.DTOs.Court
+﻿using SportRentHub.Entities.DTOs.ChildCourt;
+
+namespace SportRentHub.Entities.DTOs.Court
 {
     public class CourtDto
     {
@@ -19,5 +21,6 @@
         public int Status { get; set; }
         public string UserFullname { get; set; }
         public string UserPhoneNumber { get; set; }
+        public List<ChildCourtDto> ChildLst { get; set; }
     }
 }
