@@ -21,6 +21,8 @@ namespace SportRentHub.Entities.DTOs.Court
         public int Status { get; set; }
         public string UserFullname { get; set; }
         public string UserPhoneNumber { get; set; }
-        public List<ChildCourtDto> ChildLst { get; set; }
+		public TimeSpan StartTime { get; set; }
+		public TimeSpan EndTime { get; set; }
+		public List<ChildCourtDto> ChildLst { get; set; }
     }
 }

@@ -22,11 +22,17 @@ builder.Services.AddControllers();
 
 //Maspster configuration 
 TypeAdapterConfig<Court, CourtDto>.NewConfig()
-    .Ignore(dest => dest.Images);
-TypeAdapterConfig<Court, CourtDto>.NewConfig()
-    .Map(court => court.Images, courtDto => !string.IsNullOrEmpty(courtDto.Images)
-        ? courtDto.Images.Split(new[] { ',' }, StringSplitOptions.None).ToList()
-        : new List<string>());
+	.Map(dest => dest.Images, src =>
+		!string.IsNullOrEmpty(src.Images)
+		? src.Images.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
+		: new List<string>());
+
+TypeAdapterConfig<CourtDto, Court>.NewConfig()
+	.Map(dest => dest.Images, src =>
+		src.Images != null && src.Images.Any()
+		? string.Join(",", src.Images)
+		: string.Empty);
+TypeAdapterConfig.GlobalSettings.Compile();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>

@@ -13,5 +13,7 @@
         public List<string>? Images { get; set; }
         public string? ContactPerson { get; set; }
         public string? ContactPhone { get; set; }
-    }
+		public TimeSpan? StartTime { get; set; }
+		public TimeSpan? EndTime { get; set; }
+	}
 }
