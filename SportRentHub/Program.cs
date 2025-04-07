@@ -77,6 +77,11 @@ builder.Services.ConfigureJwt(builder.Configuration);
 
 builder.Services.AddSingleton<IServiceManager, ServiceManager>();
 builder.Services.AddSingleton<IRepositoryManager, RepositoryManager>();
+builder.Services.AddHttpsRedirection(options =>
+{
+	options.RedirectStatusCode = StatusCodes.Status308PermanentRedirect;
+	options.HttpsPort = 443;
+});
 
 DefaultTypeMap.MatchNamesWithUnderscores = true;
 

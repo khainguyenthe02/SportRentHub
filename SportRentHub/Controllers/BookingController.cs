@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SportRentHub.Entities.Const;
 using SportRentHub.Entities.DTOs.Booking;
+using SportRentHub.Entities.DTOs.ChildCourt;
 using SportRentHub.Entities.DTOs.User;
+using SportRentHub.Entities.Models;
 using SportRentHub.Services.Interfaces;
 
 namespace SportRentHub.Controllers
@@ -27,7 +29,7 @@ namespace SportRentHub.Controllers
             {
                 return StatusCode((int)HttpStatusCode.NoContent);
             }
-            return Ok(bookingDto);
+			return Ok(bookingDto);
         }
 
         [HttpGet("get-list")]
@@ -35,7 +37,8 @@ namespace SportRentHub.Controllers
         public async Task<IActionResult> GetBookings()
         {
             var bookings = await _serviceManager.BookingService.GetAll();
-            return Ok(bookings ?? new List<BookingDto>());
+            if(!bookings.Any())return Ok(new List<BookingDto>());
+            return Ok(bookings);
         }
 
         [HttpPost("create")]
@@ -87,8 +90,8 @@ namespace SportRentHub.Controllers
         public async Task<IActionResult> Search(BookingSearchDto search)
         {
             var searchList = await _serviceManager.BookingService.Search(search);
-            if (!searchList.Any()) return Ok(searchList);
-            return Ok(searchList);
+            if (!searchList.Any()) return Ok(new List<BookingDto>());
+			return Ok(searchList);
         }
             
     }

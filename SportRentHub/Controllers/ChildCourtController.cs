@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SportRentHub.Entities.Const;
 using SportRentHub.Entities.DTOs.Booking;
 using SportRentHub.Entities.DTOs.ChildCourt;
+using SportRentHub.Entities.Models;
 using SportRentHub.Services.Interfaces;
 
 namespace SportRentHub.Controllers
@@ -33,7 +34,8 @@ namespace SportRentHub.Controllers
 		public async Task<IActionResult> GetChildCourts()
 		{
 			var childCourts = await _serviceManager.ChildCourtService.GetAll();
-			return Ok(childCourts ?? new List<ChildCourtDto>());
+			if (!childCourts.Any()) return Ok(new List<ChildCourtDto>());
+			return Ok(childCourts);
 		}
 
 		[HttpPost("create")]
@@ -96,7 +98,7 @@ namespace SportRentHub.Controllers
 		public async Task<IActionResult> Search(ChildCourtSearchDto search)
 		{
 			var searchList = await _serviceManager.ChildCourtService.Search(search);
-			if (!searchList.Any()) return Ok(searchList);
+			if (!searchList.Any()) return Ok(new List<ChildCourtDto>());
 			return Ok(searchList);
 		}
 	}

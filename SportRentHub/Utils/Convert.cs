@@ -68,11 +68,7 @@ namespace SportRentHub.Utils
             switch (roleType)
             {
                 case 0:
-                    return "Technical";
-                case 1:
-                    return "Accountant";
-                case 2:
-                    return "Sales";
+                    return "User";
                 case 999:
                     return "Admin";
                 default:

@@ -1,4 +1,6 @@
-﻿namespace SportRentHub.Entities.DTOs.Booking
+﻿using SportRentHub.Entities.DTOs.ChildCourt;
+
+namespace SportRentHub.Entities.DTOs.Booking
 {
     public class BookingDto
     {
@@ -13,5 +15,10 @@
         public string UserFullName { get; set; }
         public string UserPhoneNumber { get; set; }
         public string ChildCourtName { get; set; }
-    }
+        public int CourtId { get; set; }
+        public string CourtName { get; set; }
+		public string CourtDistrict { get; set; }
+		public string CourtWard { get; set; }
+		public string CourtStreet { get; set; }
+	}
 }

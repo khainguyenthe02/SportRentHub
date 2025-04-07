@@ -50,10 +50,6 @@ namespace SportRentHub.Controllers
             // Kiểm tra email có trùng hay không
             if (createUserDto.Email != null)
             {
-                if (!Validate.IsValidEmail(createUserDto.Email))
-                {
-                    return BadRequest(MessageError.TypeEmailError);
-                }
                 var userDto = await _serviceManager.UserService.GetByEmail(createUserDto.Email);
                 if (userDto != null)
                 {
@@ -66,6 +62,18 @@ namespace SportRentHub.Controllers
 				if (userDto != null)
 				{
 					return BadRequest("Username đã tồn tại");
+				}
+			}
+			if (createUserDto.PhoneNumber != null)
+			{
+				if (createUserDto.PhoneNumber == null)
+				{
+					return BadRequest("Định dạng số điện thoại không hợp lệ");
+				}
+				var userByPhone = await _serviceManager.UserService.Search(new UserSearchDto { PhoneNumber = createUserDto.PhoneNumber});
+				if (userByPhone.Any())
+				{
+					return BadRequest("Số điện thoại đã tồn tại");
 				}
 			}
 			if (createUserDto.Password == null)
@@ -91,14 +99,22 @@ namespace SportRentHub.Controllers
             loginRequest.Username = loginRequest.Username.Replace(" ", "");
             loginRequest.Password = loginRequest.Password.Replace(" ", "");
 
-            // check username
-            var user = await _serviceManager.UserService.GetByUsername(loginRequest.Username);
-            if (user == null)
-            {
-                return BadRequest(MessageError.InvalidUser);
-            }
-            //login
-            var userLogin = await _serviceManager.UserService.Login(loginRequest);
+			// check username
+			UserDto user = new UserDto();
+			if (Validate.IsValidPhoneNumber(loginRequest.Username))
+			{
+				user = (await _serviceManager.UserService.Search( new UserSearchDto { PhoneNumber = loginRequest.Username })).FirstOrDefault();
+			}
+			else
+			{
+				user = await _serviceManager.UserService.GetByUsername(loginRequest.Username);
+			}
+			if (user == null)
+			{
+				return BadRequest(MessageError.InvalidUser);
+			}
+			//login
+			var userLogin = await _serviceManager.UserService.Login(loginRequest);
             if (userLogin == null)
             {
                 return BadRequest(MessageError.LoginError);
@@ -163,6 +179,16 @@ namespace SportRentHub.Controllers
             // Kiểm tra user có trùng hay không
             var userDto = await _serviceManager.UserService.GetById(updateUserDto.Id);
             if (userDto == null) return BadRequest(MessageError.InvalidUser);
+            if (updateUserDto.PhoneNumber != null)
+            {
+                var userExist = await _serviceManager.UserService.Search(new UserSearchDto { PhoneNumber = updateUserDto.PhoneNumber });
+                if (userExist != null) return BadRequest("Số điện thoại này đã tồn tại");
+            }
+            if (updateUserDto.Email != null)
+            {
+                var userExist = await _serviceManager.UserService.Search(new UserSearchDto { Email = updateUserDto.Email });
+                if (userExist != null) return BadRequest("Email này đã tồn tại");
+            }
             if (await _serviceManager.UserService.Update(updateUserDto))
             {
                 return Ok();

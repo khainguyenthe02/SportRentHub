@@ -114,55 +114,96 @@ namespace SportRentHub.Services
                 throw;
             }
         }
-        public async Task<List<BookingDto>> FilterData (List<BookingDto> lst)
-        {
-            if (lst.Any())
-            {
-                //adapter user
-                var userIdLst = lst.Where(item => item.UserId != 0).Select(item => item.UserId).ToList();
-                if (userIdLst.Any())
-                {
-                    var searchUser = new UserSearchDto
-                    {
-                        IdLst = userIdLst,
-                    };
-                    var userLst = (await _repositoryManager.UserRepository.Search(searchUser))
-                        .ToDictionary(u => u.Id, u => ( u.Fullname, u.PhoneNumber));
-                    if (userLst.Any())
-                    {
-                        foreach (var item in lst)
-                        {
-                            if(item.UserId != 0 && userLst.ContainsKey(item.UserId))
-                            {
-                                item.UserFullName = userLst[item.UserId].Fullname;
-                                item.UserPhoneNumber = userLst[item.UserId].PhoneNumber;
-                            }
-                        }
-                    }
-                }
-                //adapter child_court
-                var childCourtIdLst = lst.Where(item => item.ChildCourtId != 0).Select(item => item.ChildCourtId).ToList();
-                if (childCourtIdLst.Any())
-                {
-                    var searchChildCourt = new ChildCourtSearchDto
-                    {
-                        IdLst = childCourtIdLst,
-                    };
-                    var childCourtLst = (await _repositoryManager.ChildCourtRepository.Search(searchChildCourt))
-                        .ToDictionary(c => c.Id, c => (c.ChildCourtName));
-                    if (childCourtLst.Any())
-                    {
-                        foreach (var item in lst)
-                        {
-                            if (item.ChildCourtId != 0 && childCourtLst.ContainsKey(item.ChildCourtId))
-                            {
-                                item.ChildCourtName = childCourtLst[item.ChildCourtId];
-                            }
-                        }
-                    }
-                }
-            }
-            return lst;
-        }
-    }
+		public async Task<List<BookingDto>> FilterData(List<BookingDto> lst)
+		{
+			if (lst.Any())
+			{
+				// Adapter user
+				var userIdLst = lst.Where(item => item.UserId != 0).Select(item => item.UserId).ToList();
+				if (userIdLst.Any())
+				{
+					var searchUser = new UserSearchDto
+					{
+						IdLst = userIdLst,
+					};
+					var userLst = (await _repositoryManager.UserRepository.Search(searchUser))
+						.ToDictionary(u => u.Id, u => (u.Fullname, u.PhoneNumber));
+					if (userLst.Any())
+					{
+						foreach (var item in lst)
+						{
+							if (item.UserId != 0 && userLst.ContainsKey(item.UserId))
+							{
+								item.UserFullName = userLst[item.UserId].Fullname;
+								item.UserPhoneNumber = userLst[item.UserId].PhoneNumber;
+							}
+						}
+					}
+				}
+
+				var childCourtIdLst = lst.Where(item => item.ChildCourtId != 0).Select(item => item.ChildCourtId).ToList();
+				if (childCourtIdLst.Any())
+				{
+					var searchChildCourt = new ChildCourtSearchDto
+					{
+						IdLst = childCourtIdLst,
+					};
+					var childCourtLst = (await _repositoryManager.ChildCourtRepository.Search(searchChildCourt))
+						.ToDictionary(c => c.Id, c => (c.ChildCourtName, c.CourtId));
+
+					if (childCourtLst.Any())
+					{
+						var courtIdLst = childCourtLst.Values
+							.Where(c => c.CourtId != 0)
+							.Select(c => c.CourtId)
+							.Distinct()
+							.ToList();
+
+						Dictionary<int, Court> courtLst = new();
+						if (courtIdLst.Any())
+						{
+							var searchCourt = new CourtSearchDto
+							{
+								IdLst = courtIdLst,
+							};
+							var courts = await _repositoryManager.CourtRepository.Search(searchCourt);
+							if (courts?.Any() == true)
+							{
+								courtLst = courts.ToDictionary(
+									c => c.Id,
+									c => new Court
+									{
+										CourtName = c.CourtName,
+										Ward = c.Ward,
+										Street = c.Street,
+										District = c.District
+									}
+								);
+							}
+						}
+
+						// Update booking items
+						foreach (var item in lst)
+						{
+							if (item.ChildCourtId != 0 && childCourtLst.ContainsKey(item.ChildCourtId))
+							{
+								item.ChildCourtName = childCourtLst[item.ChildCourtId].ChildCourtName;
+								var courtId = childCourtLst[item.ChildCourtId].CourtId;
+								if (courtId != 0 && courtLst.ContainsKey(courtId))
+								{
+									var court = courtLst[courtId];
+                                    item.CourtId = court.Id;
+                                    item.CourtName = court.CourtName;
+                                    item.CourtWard = court.Ward;
+                                    item.CourtStreet = court.Street;
+                                    item.CourtDistrict = court.District;
+								}
+							}
+						}
+					}
+				}
+			}
+			return lst;
+		}
+	}
 }
