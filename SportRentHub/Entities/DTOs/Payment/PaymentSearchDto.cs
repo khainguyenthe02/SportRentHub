@@ -6,6 +6,7 @@
         public int? UserId { get; set; }
         public int? BookingId { get; set; }
         public int? Type { get; set; }
-        public List<int>? IdLst { get; set; }
+		public int? Status { get; set; }
+		public List<int>? IdLst { get; set; }
     }
 }

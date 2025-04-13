@@ -21,7 +21,8 @@ namespace SportRentHub.Controllers
         }
 
         [HttpGet("id/{id}")]
-        public async Task<IActionResult> GetCourtById(int id)
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> GetCourtById(int id)
         {
             var courtDto = await _serviceManager.CourtService.GetById(id);
             if (courtDto == null)
@@ -37,7 +38,8 @@ namespace SportRentHub.Controllers
         }
 
         [HttpGet("get-list")]
-        public async Task<IActionResult> GetCourts()
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> GetCourts()
         {
             var courts = await _serviceManager.CourtService.GetAll();
             if(!courts.Any()) return Ok(courts);
@@ -53,7 +55,8 @@ namespace SportRentHub.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateCourt([FromBody] CourtCreateDto createCourtDto)
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> CreateCourt([FromBody] CourtCreateDto createCourtDto)
         {
             if (createCourtDto == null)
             {
@@ -69,7 +72,8 @@ namespace SportRentHub.Controllers
         }
 
         [HttpPut("update")]
-        public async Task<IActionResult> UpdateCourt([FromBody] CourtUpdateDto updateCourtDto)
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> UpdateCourt([FromBody] CourtUpdateDto updateCourtDto)
         {
             if (updateCourtDto == null)
             {
@@ -87,7 +91,8 @@ namespace SportRentHub.Controllers
         }
 
         [HttpDelete("delete")]
-        public async Task<IActionResult> DeleteCourt(int id)
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> DeleteCourt(int id)
         {
             var court = await _serviceManager.CourtService.GetById(id);
             if (court == null)
@@ -98,6 +103,7 @@ namespace SportRentHub.Controllers
             return Ok();
         }
 		[HttpPost("search")]
+		[Authorize(Roles = "Admin, User")]
 		public async Task<IActionResult> Search(CourtSearchDto search)
 		{
 			var searchList = await _serviceManager.CourtService.Search(search);

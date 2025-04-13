@@ -8,7 +8,8 @@
         public DateTime CreateDate { get; set; }
         public float Price { get; set; }
         public int Type { get; set; }
-        public string UserFullname { get; set; }
+		public int Status { get; set; }
+		public string UserFullname { get; set; }
         public string UserPhoneNumber { get; set; }
         public int CourtId { get; set; }
         public string CourtName { get; set; }
