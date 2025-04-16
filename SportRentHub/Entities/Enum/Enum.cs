@@ -17,4 +17,9 @@
         UN_PAID,
         PAID
     }
+    public enum PaymentStatus
+	{
+		UN_PAID,
+		PAID
+	}
 }

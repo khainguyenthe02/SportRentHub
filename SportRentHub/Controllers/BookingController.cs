@@ -22,7 +22,8 @@ namespace SportRentHub.Controllers
         }
 
         [HttpGet("id/{id}")]
-        public async Task<IActionResult> GetBookingById(int id)
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> GetBookingById(int id)
         {
             var bookingDto = await _serviceManager.BookingService.GetById(id);
             if (bookingDto == null)
@@ -33,8 +34,9 @@ namespace SportRentHub.Controllers
         }
 
         [HttpGet("get-list")]
-        
-        public async Task<IActionResult> GetBookings()
+		[Authorize(Roles = "Admin, User")]
+
+		public async Task<IActionResult> GetBookings()
         {
             var bookings = await _serviceManager.BookingService.GetAll();
             if(!bookings.Any())return Ok(new List<BookingDto>());
@@ -42,7 +44,8 @@ namespace SportRentHub.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateBooking([FromBody] BookingCreateDto createBookingDto)
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> CreateBooking([FromBody] BookingCreateDto createBookingDto)
         {
             if (createBookingDto == null)
             {
@@ -58,7 +61,8 @@ namespace SportRentHub.Controllers
         }
 
         [HttpPut("update")]
-        public async Task<IActionResult> UpdateBooking([FromBody] BookingUpdateDto updateBookingDto)
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> UpdateBooking([FromBody] BookingUpdateDto updateBookingDto)
         {
             if (updateBookingDto == null)
             {
@@ -76,7 +80,8 @@ namespace SportRentHub.Controllers
         }
 
         [HttpDelete("delete")]
-        public async Task<IActionResult> DeleteBooking(int id)
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> DeleteBooking(int id)
         {
             var booking = await _serviceManager.BookingService.GetById(id);
             if (booking == null)
@@ -87,7 +92,8 @@ namespace SportRentHub.Controllers
             return Ok();
         }
         [HttpPost("search")]
-        public async Task<IActionResult> Search(BookingSearchDto search)
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> Search(BookingSearchDto search)
         {
             var searchList = await _serviceManager.BookingService.Search(search);
             if (!searchList.Any()) return Ok(new List<BookingDto>());

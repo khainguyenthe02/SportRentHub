@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SportRentHub.Entities.Const;
 using SportRentHub.Entities.DTOs.Booking;
@@ -20,6 +21,7 @@ namespace SportRentHub.Controllers
 		}
 
 		[HttpGet("id/{id}")]
+		[Authorize(Roles = "Admin, User")]
 		public async Task<IActionResult> GetChildCourtById(int id)
 		{
 			var childCourtDto = await _serviceManager.ChildCourtService.GetById(id);
@@ -31,6 +33,7 @@ namespace SportRentHub.Controllers
 		}
 
 		[HttpGet("get-list")]
+		[Authorize(Roles = "Admin, User")]
 		public async Task<IActionResult> GetChildCourts()
 		{
 			var childCourts = await _serviceManager.ChildCourtService.GetAll();
@@ -39,6 +42,7 @@ namespace SportRentHub.Controllers
 		}
 
 		[HttpPost("create")]
+		[Authorize(Roles = "Admin, User")]
 		public async Task<IActionResult> CreateChildCourt([FromBody] ChildCourtCreateDto createChildCourtDto)
 		{
 			if (createChildCourtDto == null)
@@ -59,6 +63,7 @@ namespace SportRentHub.Controllers
 		}
 
 		[HttpPut("update")]
+		[Authorize(Roles = "Admin, User")]
 		public async Task<IActionResult> UpdateChildCourt([FromBody] ChildCourtUpdateDto updateChildCourtDto)
 		{
 			if (updateChildCourtDto == null)
@@ -84,6 +89,7 @@ namespace SportRentHub.Controllers
 		}
 
 		[HttpDelete("delete")]
+		[Authorize(Roles = "Admin, User")]
 		public async Task<IActionResult> DeleteChildCourt(int id)
 		{
 			var childCourt = await _serviceManager.ChildCourtService.GetById(id);
@@ -95,6 +101,7 @@ namespace SportRentHub.Controllers
 			return Ok();
 		}
 		[HttpPost("search")]
+		[Authorize(Roles = "Admin, User")]
 		public async Task<IActionResult> Search(ChildCourtSearchDto search)
 		{
 			var searchList = await _serviceManager.ChildCourtService.Search(search);

@@ -8,5 +8,6 @@
         public DateTime CreateDate { get; set; }
         public float Price { get; set; }
         public int Type { get; set; }
-    }
+        public int Status { get; set; }
+	}
 }

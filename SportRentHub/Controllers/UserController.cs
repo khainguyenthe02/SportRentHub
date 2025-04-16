@@ -27,7 +27,8 @@ namespace SportRentHub.Controllers
             _config = configuration;
         }
         [HttpGet("id/{id}")]
-        public async Task<IActionResult> GetUserById(int id)
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> GetUserById(int id)
         {
             var userDto = await _serviceManager.UserService.GetById(id);
             if (userDto is null)
@@ -37,7 +38,8 @@ namespace SportRentHub.Controllers
             return Ok(userDto);
         }
         [HttpGet("get-list")]
-        public async Task<IActionResult> GetUsers()
+		[Authorize(Roles = "Admin")]
+		public async Task<IActionResult> GetUsers()
         {
             List<UserDto> userDto;
             userDto = await _serviceManager.UserService.GetAll();
@@ -45,7 +47,8 @@ namespace SportRentHub.Controllers
             return Ok(userDto);
         }
         [HttpPost("create")]
-        public async Task<IActionResult> CreateUser([FromBody] UserCreateDto createUserDto)
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> CreateUser([FromBody] UserCreateDto createUserDto)
         {
             // Kiểm tra email có trùng hay không
             if (createUserDto.Email != null)
@@ -161,7 +164,8 @@ namespace SportRentHub.Controllers
             return Ok(result);
         }
         [HttpDelete("delete")]
-        public async Task<IActionResult> DeleteAsync(int id)
+		[Authorize(Roles = "Admin")]
+		public async Task<IActionResult> DeleteAsync(int id)
         {
             var userDto = await _serviceManager.UserService.GetById(id);
             if (userDto != null)
@@ -173,8 +177,9 @@ namespace SportRentHub.Controllers
             return BadRequest("Người dùng không tồn tại");
         }
         [HttpPut("update")]
-        //[Authorize]
-        public async Task<IActionResult> UpdateUser([FromBody] UserUpdateDto updateUserDto, CancellationToken cancellationToken)
+		[Authorize(Roles = "Admin, User")]
+		//[Authorize]
+		public async Task<IActionResult> UpdateUser([FromBody] UserUpdateDto updateUserDto, CancellationToken cancellationToken)
         {
             // Kiểm tra user có trùng hay không
             var userDto = await _serviceManager.UserService.GetById(updateUserDto.Id);
@@ -213,6 +218,7 @@ namespace SportRentHub.Controllers
 			return Ok("Đã đăng xuất thành công.");
 		}
 		[HttpPost("search")]
+		[Authorize(Roles = "Admin, User")]
 		public async Task<IActionResult> Search(UserSearchDto search)
 		{
 			var searchList = await _serviceManager.UserService.Search(search);
@@ -220,7 +226,7 @@ namespace SportRentHub.Controllers
 			return Ok(searchList);
 		}
 		[HttpPost("forgot-password")]
-        [AllowAnonymous]
+		[AllowAnonymous]
         public async Task<IActionResult> ForgotPassword([FromForm] string email)
         {
             if (string.IsNullOrEmpty(email))
