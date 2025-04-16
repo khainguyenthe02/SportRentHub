@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using SportRentHub.Entities.Const;
+using SportRentHub.Entities.DTOs.Booking;
 using SportRentHub.Entities.DTOs.User;
 using SportRentHub.Entities.Extensions;
 using SportRentHub.Services.Interfaces;
@@ -26,7 +27,8 @@ namespace SportRentHub.Controllers
             _config = configuration;
         }
         [HttpGet("id/{id}")]
-        public async Task<IActionResult> GetUserById(int id)
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> GetUserById(int id)
         {
             var userDto = await _serviceManager.UserService.GetById(id);
             if (userDto is null)
@@ -36,7 +38,8 @@ namespace SportRentHub.Controllers
             return Ok(userDto);
         }
         [HttpGet("get-list")]
-        public async Task<IActionResult> GetUsers()
+		[Authorize(Roles = "Admin")]
+		public async Task<IActionResult> GetUsers()
         {
             List<UserDto> userDto;
             userDto = await _serviceManager.UserService.GetAll();
@@ -44,22 +47,39 @@ namespace SportRentHub.Controllers
             return Ok(userDto);
         }
         [HttpPost("create")]
-        public async Task<IActionResult> CreateUser([FromBody] UserCreateDto createUserDto)
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> CreateUser([FromBody] UserCreateDto createUserDto)
         {
             // Kiểm tra email có trùng hay không
             if (createUserDto.Email != null)
             {
-                if (!Validate.IsValidEmail(createUserDto.Email))
-                {
-                    return BadRequest(MessageError.TypeEmailError);
-                }
                 var userDto = await _serviceManager.UserService.GetByEmail(createUserDto.Email);
                 if (userDto != null)
                 {
                     return BadRequest(MessageError.EmailExist);
                 }
             }
-            if (createUserDto.Password == null)
+			if (createUserDto.Username != null)
+			{
+				var userDto = await _serviceManager.UserService.GetByUsername(createUserDto.Username);
+				if (userDto != null)
+				{
+					return BadRequest("Username đã tồn tại");
+				}
+			}
+			if (createUserDto.PhoneNumber != null)
+			{
+				if (createUserDto.PhoneNumber == null)
+				{
+					return BadRequest("Định dạng số điện thoại không hợp lệ");
+				}
+				var userByPhone = await _serviceManager.UserService.Search(new UserSearchDto { PhoneNumber = createUserDto.PhoneNumber});
+				if (userByPhone.Any())
+				{
+					return BadRequest("Số điện thoại đã tồn tại");
+				}
+			}
+			if (createUserDto.Password == null)
             {
                 return BadRequest(MessageError.InvalidPasswordError);
             }
@@ -82,14 +102,22 @@ namespace SportRentHub.Controllers
             loginRequest.Username = loginRequest.Username.Replace(" ", "");
             loginRequest.Password = loginRequest.Password.Replace(" ", "");
 
-            // check username
-            var user = await _serviceManager.UserService.GetByUsername(loginRequest.Username);
-            if (user == null)
-            {
-                return BadRequest(MessageError.InvalidUser);
-            }
-            //login
-            var userLogin = await _serviceManager.UserService.Login(loginRequest);
+			// check username
+			UserDto user = new UserDto();
+			if (Validate.IsValidPhoneNumber(loginRequest.Username))
+			{
+				user = (await _serviceManager.UserService.Search( new UserSearchDto { PhoneNumber = loginRequest.Username })).FirstOrDefault();
+			}
+			else
+			{
+				user = await _serviceManager.UserService.GetByUsername(loginRequest.Username);
+			}
+			if (user == null)
+			{
+				return BadRequest(MessageError.InvalidUser);
+			}
+			//login
+			var userLogin = await _serviceManager.UserService.Login(loginRequest);
             if (userLogin == null)
             {
                 return BadRequest(MessageError.LoginError);
@@ -136,7 +164,8 @@ namespace SportRentHub.Controllers
             return Ok(result);
         }
         [HttpDelete("delete")]
-        public async Task<IActionResult> DeleteAsync(int id)
+		[Authorize(Roles = "Admin")]
+		public async Task<IActionResult> DeleteAsync(int id)
         {
             var userDto = await _serviceManager.UserService.GetById(id);
             if (userDto != null)
@@ -148,20 +177,56 @@ namespace SportRentHub.Controllers
             return BadRequest("Người dùng không tồn tại");
         }
         [HttpPut("update")]
-        //[Authorize]
-        public async Task<IActionResult> UpdateUser([FromBody] UserUpdateDto updateUserDto, CancellationToken cancellationToken)
+		[Authorize(Roles = "Admin, User")]
+		//[Authorize]
+		public async Task<IActionResult> UpdateUser([FromBody] UserUpdateDto updateUserDto, CancellationToken cancellationToken)
         {
             // Kiểm tra user có trùng hay không
             var userDto = await _serviceManager.UserService.GetById(updateUserDto.Id);
             if (userDto == null) return BadRequest(MessageError.InvalidUser);
+            if (updateUserDto.PhoneNumber != null)
+            {
+                var userExist = await _serviceManager.UserService.Search(new UserSearchDto { PhoneNumber = updateUserDto.PhoneNumber });
+                if (userExist != null) return BadRequest("Số điện thoại này đã tồn tại");
+            }
+            if (updateUserDto.Email != null)
+            {
+                var userExist = await _serviceManager.UserService.Search(new UserSearchDto { Email = updateUserDto.Email });
+                if (userExist != null) return BadRequest("Email này đã tồn tại");
+            }
             if (await _serviceManager.UserService.Update(updateUserDto))
             {
                 return Ok();
             }
             return BadRequest(MessageError.ErrorUpdate);
         }
-        [HttpPost("forgot-password")]
-        [AllowAnonymous]
+        [HttpGet("Logout")]
+        [Authorize()]
+        public async Task<IActionResult> Logout()
+        {
+			var userId = User.FindFirstValue("employeeId");
+			if (string.IsNullOrEmpty(userId) || !int.TryParse(userId, out var userID))
+			{
+				return BadRequest("Không thể tìm thấy người dùng");
+			}
+			var updateNullToken = new UserUpdateDto
+			{
+				Id = int.Parse(userId),
+				Token = "",
+			};
+			await _serviceManager.UserService.Update(updateNullToken);
+			return Ok("Đã đăng xuất thành công.");
+		}
+		[HttpPost("search")]
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> Search(UserSearchDto search)
+		{
+			var searchList = await _serviceManager.UserService.Search(search);
+			if (!searchList.Any()) return Ok(searchList);
+			return Ok(searchList);
+		}
+		[HttpPost("forgot-password")]
+		[AllowAnonymous]
         public async Task<IActionResult> ForgotPassword([FromForm] string email)
         {
             if (string.IsNullOrEmpty(email))

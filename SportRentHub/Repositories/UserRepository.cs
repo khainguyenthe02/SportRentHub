@@ -108,11 +108,6 @@ namespace SportRentHub.Repositories
             {
                 whereSql += " AND role = @Role";
             }
-            if (search.IdLst != null && search.IdLst.Any())
-            {
-                whereSql += " AND id IN @IdLst";
-            }
-
             whereSql += " ORDER BY id DESC";
 
             var userList = await _dbService.GetAll<User>(selectSql + whereSql, search);

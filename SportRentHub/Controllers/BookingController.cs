@@ -1,8 +1,11 @@
 ﻿using System.Net;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SportRentHub.Entities.Const;
 using SportRentHub.Entities.DTOs.Booking;
+using SportRentHub.Entities.DTOs.ChildCourt;
 using SportRentHub.Entities.DTOs.User;
+using SportRentHub.Entities.Models;
 using SportRentHub.Services.Interfaces;
 
 namespace SportRentHub.Controllers
@@ -19,25 +22,30 @@ namespace SportRentHub.Controllers
         }
 
         [HttpGet("id/{id}")]
-        public async Task<IActionResult> GetBookingById(int id)
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> GetBookingById(int id)
         {
             var bookingDto = await _serviceManager.BookingService.GetById(id);
             if (bookingDto == null)
             {
                 return StatusCode((int)HttpStatusCode.NoContent);
             }
-            return Ok(bookingDto);
+			return Ok(bookingDto);
         }
 
         [HttpGet("get-list")]
-        public async Task<IActionResult> GetBookings()
+		[Authorize(Roles = "Admin, User")]
+
+		public async Task<IActionResult> GetBookings()
         {
             var bookings = await _serviceManager.BookingService.GetAll();
-            return Ok(bookings ?? new List<BookingDto>());
+            if(!bookings.Any())return Ok(new List<BookingDto>());
+            return Ok(bookings);
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateBooking([FromBody] BookingCreateDto createBookingDto)
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> CreateBooking([FromBody] BookingCreateDto createBookingDto)
         {
             if (createBookingDto == null)
             {
@@ -53,7 +61,8 @@ namespace SportRentHub.Controllers
         }
 
         [HttpPut("update")]
-        public async Task<IActionResult> UpdateBooking([FromBody] BookingUpdateDto updateBookingDto)
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> UpdateBooking([FromBody] BookingUpdateDto updateBookingDto)
         {
             if (updateBookingDto == null)
             {
@@ -71,7 +80,8 @@ namespace SportRentHub.Controllers
         }
 
         [HttpDelete("delete")]
-        public async Task<IActionResult> DeleteBooking(int id)
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> DeleteBooking(int id)
         {
             var booking = await _serviceManager.BookingService.GetById(id);
             if (booking == null)
@@ -81,5 +91,14 @@ namespace SportRentHub.Controllers
             await _serviceManager.BookingService.Delete(id);
             return Ok();
         }
+        [HttpPost("search")]
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> Search(BookingSearchDto search)
+        {
+            var searchList = await _serviceManager.BookingService.Search(search);
+            if (!searchList.Any()) return Ok(new List<BookingDto>());
+			return Ok(searchList);
+        }
+            
     }
 }

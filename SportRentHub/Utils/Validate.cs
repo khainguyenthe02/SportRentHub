@@ -40,5 +40,9 @@ namespace ERBeeVisionMaster.Utils
             var isValidated = hasEmail.IsMatch(email);
             return isValidated;
         }
-    }
+		public static bool IsValidPhoneNumber(string phoneNumber)
+		{
+			return Regex.IsMatch(phoneNumber, @"^0\d{9}$");
+		}
+	}
 }

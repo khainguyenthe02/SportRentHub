@@ -21,8 +21,8 @@ namespace SportRentHub.Repositories
         public async Task<bool> Create(Payment payment)
         {
             var result = await _dbService.EditData(
-                "INSERT INTO tbl_payment (user_id, booking_id, create_date, price, type) " +
-                "VALUES (@UserId, @BookingId, @CreateDate, @Price, @Type)",
+                "INSERT INTO tbl_payment (user_id, booking_id, create_date, price, type, status) " +
+                "VALUES (@UserId, @BookingId, @CreateDate, @Price, @Type, @Status)",
                 payment);
 
             return result > 0;
@@ -72,7 +72,11 @@ namespace SportRentHub.Repositories
             {
                 whereSql += " AND user_id = @UserId";
             }
-            if (search.BookingId.HasValue)
+            if(search.Status.HasValue)
+			{
+				whereSql += " AND status = @Status";
+			}
+			if (search.BookingId.HasValue)
             {
                 whereSql += " AND booking_id = @BookingId";
             }
@@ -97,8 +101,13 @@ namespace SportRentHub.Repositories
                 updateSql += "type = @Type, ";
                 hasChanged = true;
             }
+			if (payment.Status > 0)
+			{
+				updateSql += "status = @Status, ";
+				hasChanged = true;
+			}
 
-            if (!hasChanged)
+			if (!hasChanged)
             {
                 return false;
             }

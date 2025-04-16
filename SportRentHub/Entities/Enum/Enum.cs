@@ -35,4 +35,9 @@
         PAID, // đã thanh toán
         CANCELED, // đã hủy
     }
+    public enum PaymentStatus
+	{
+		UN_PAID,
+		PAID
+	}
 }

@@ -4,6 +4,7 @@ using SportRentHub.Entities.DTOs.Booking;
 using SportRentHub.Entities.DTOs.Court;
 using SportRentHub.Entities.DTOs.Payment;
 using SportRentHub.Entities.DTOs.User;
+using SportRentHub.Entities.Enum;
 using SportRentHub.Entities.Models;
 using SportRentHub.Repositories.Interfaces;
 using SportRentHub.Services.Interfaces;
@@ -25,6 +26,7 @@ namespace SportRentHub.Services
             {
                 var payment = create.Adapt<Payment>();
                 payment.CreateDate = DateTime.Now;
+                payment.Status = (int)PaymentStatus.UN_PAID;
 
                 var result = await _repositoryManager.PaymentRepository.Create(payment);
                 return result;
@@ -149,7 +151,7 @@ namespace SportRentHub.Services
                         IdLst = bookingIdLst,
                     };
                     var bookingLst = (await _repositoryManager.BookingRepository.Search(searchBooking))
-                        .ToDictionary(b => b.Id, b => b.CourtId);
+                        .ToDictionary(b => b.Id, b => b.ChildCourtId);
 
                     var courtIdLst = bookingLst.Values.Distinct().ToList();
                     if (courtIdLst.Any())

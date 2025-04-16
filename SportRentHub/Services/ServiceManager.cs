@@ -11,6 +11,7 @@ namespace SportRentHub.Services
         private readonly Lazy<IReviewService> _lazyReviewService;
         private readonly Lazy<IBookingService> _lazyBookingService;
         private readonly Lazy<IPaymentService> _lazyPaymentService;
+        private readonly Lazy<IChildCourtService> _lazyChildCourtService;
 
         public ServiceManager(IRepositoryManager repositoryManager, IConfiguration configuration)
         {
@@ -20,6 +21,7 @@ namespace SportRentHub.Services
             _lazyReviewService = new Lazy<IReviewService>(() => new ReviewService(repositoryManager));
             _lazyBookingService = new Lazy<IBookingService>(() => new BookingService(repositoryManager));
             _lazyPaymentService = new Lazy<IPaymentService>(() => new PaymentService(repositoryManager));
+            _lazyChildCourtService = new Lazy<IChildCourtService> (() => new ChildCourtService(repositoryManager)); 
         }
 
         public IUserService UserService => _lazyUserService.Value;
@@ -33,5 +35,7 @@ namespace SportRentHub.Services
         public IBookingService BookingService => _lazyBookingService.Value;
 
         public IPaymentService PaymentService => _lazyPaymentService.Value;
-    }
+
+		public IChildCourtService ChildCourtService => _lazyChildCourtService.Value;
+	}
 }

@@ -17,8 +17,8 @@ namespace SportRentHub.Repositories
         public async Task<bool> Create(Court court)
         {
             var result = await _dbService.EditData(
-                "INSERT INTO tbl_court (user_id, court_name, court_description, district, ward, street, min_price, max_price, create_date, update_date, contact_person, contact_phone, status) " +
-                "VALUES (@UserId, @CourtName, @CourtDescription, @District, @Ward, @Street, @MinPrice, @MaxPrice, @CreateDate, @UpdateDate, @ContactPerson, @ContactPhone, @Status)",
+                "INSERT INTO tbl_court (user_id, court_name, court_description, district, ward, street, min_price, max_price, create_date, update_date, contact_person, contact_phone, status, images, start_time, end_time) " +
+				"VALUES (@UserId, @CourtName, @CourtDescription, @District, @Ward, @Street, @MinPrice, @MaxPrice, @CreateDate, @UpdateDate, @ContactPerson, @ContactPhone, @Status, @Images, @StartTime, @EndTime)",
                 court);
 
             return result > 0;
@@ -146,7 +146,22 @@ namespace SportRentHub.Repositories
                 updateSql += "status = @Status, ";
                 hasChanged = true;
             }
-            if (!hasChanged)
+			if (court.Images != null)
+			{
+				updateSql += "images = @Images, ";
+				hasChanged = true;
+			}
+            if(court.StartTime != TimeSpan.MinValue)
+            {
+                updateSql += " start_time = @StartTime, ";
+                hasChanged = true;
+            }
+            if (court.EndTime != TimeSpan.MaxValue)
+            {
+                updateSql += "end_time = @EndTime, ";
+                hasChanged = true;
+            }
+			if (!hasChanged)
             {
                 return false;
             }

@@ -17,8 +17,8 @@ namespace SportRentHub.Repositories
         public async Task<bool> Create(Booking booking)
         {
             var result = await _dbService.EditData(
-                "INSERT INTO tbl_booking (user_id, court_id, create_date, booking_date, start_time, end_time, status, price) " +
-                "VALUES (@UserId, @CourtId, @CreateDate, @BookingDate, @StartTime, @EndTime, @Status, @Price)",
+                "INSERT INTO tbl_booking (user_id, child_court_id, create_date, start_time, end_time, status, price) " +
+                "VALUES (@UserId, @ChildCourtId, @CreateDate, @StartTime, @EndTime, @Status, @Price)",
                 booking);
 
             return result > 0;
@@ -69,13 +69,9 @@ namespace SportRentHub.Repositories
             {
                 whereSql += " AND user_id = @UserId";
             }
-            if (search.CourtId != null)
+            if (search.ChildCourtId != null)
             {
-                whereSql += " AND court_id = @CourtId";
-            }
-            if (search.BookingDate != DateTime.MinValue)
-            {
-                whereSql += " AND booking_date = @BookingDate";
+                whereSql += " AND child_court_id = @ChildCourtId";
             }
             if (search.Status != null)
             {
@@ -98,22 +94,17 @@ namespace SportRentHub.Repositories
                 updateSql += "user_id = @UserId, ";
                 hasChanged = true;
             }
-            if (booking.CourtId > 0)
+            if (booking.ChildCourtId > 0)
             {
-                updateSql += "court_id = @CourtId, ";
+                updateSql += "child_court_id = @ChildCourtId, ";
                 hasChanged = true;
             }
-            if (booking.BookingDate != DateTime.MinValue)
-            {
-                updateSql += "booking_date = @BookingDate, ";
-                hasChanged = true;
-            }
-            if (booking.StartTime > 0)
+            if (booking.StartTime != DateTime.MinValue)
             {
                 updateSql += "start_time = @StartTime, ";
                 hasChanged = true;
             }
-            if (booking.EndTime > 0)
+            if (booking.EndTime != DateTime.MinValue)
             {
                 updateSql += "end_time = @EndTime, ";
                 hasChanged = true;

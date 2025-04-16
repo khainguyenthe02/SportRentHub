@@ -55,7 +55,7 @@ namespace SportRentHub.Services
             try
             {
                 var courts = await _repositoryManager.CourtRepository.GetAll();
-                return courts.Adapt<List<CourtDto>>();
+                return await FilterData(courts.Adapt<List<CourtDto>>());
             }
             catch (Exception ex)
             {

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SportRentHub.Entities.Const;
+using SportRentHub.Entities.DTOs.Booking;
 using SportRentHub.Entities.DTOs.Review;
 using SportRentHub.Entities.DTOs.User;
 using SportRentHub.Services.Interfaces;
@@ -20,7 +21,8 @@ namespace SportRentHub.Controllers
         }
 
         [HttpGet("id/{id}")]
-        public async Task<IActionResult> GetReviewById(int id)
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> GetReviewById(int id)
         {
             var reviewDto = await _serviceManager.ReviewService.GetById(id);
             if (reviewDto == null)
@@ -31,14 +33,16 @@ namespace SportRentHub.Controllers
         }
 
         [HttpGet("get-list")]
-        public async Task<IActionResult> GetReviews()
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> GetReviews()
         {
             var reviews = await _serviceManager.ReviewService.GetAll();
             return Ok(reviews ?? new List<ReviewDto>());
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateReview([FromBody] ReviewCreateDto createReviewDto)
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> CreateReview([FromBody] ReviewCreateDto createReviewDto)
         {
             if (createReviewDto == null)
             {
@@ -54,7 +58,8 @@ namespace SportRentHub.Controllers
         }
 
         [HttpPut("update")]
-        public async Task<IActionResult> UpdateReview([FromBody] ReviewUpdateDto updateReviewDto)
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> UpdateReview([FromBody] ReviewUpdateDto updateReviewDto)
         {
             if (updateReviewDto == null)
             {
@@ -72,7 +77,8 @@ namespace SportRentHub.Controllers
         }
 
         [HttpDelete("delete")]
-        public async Task<IActionResult> DeleteReview(int id)
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> DeleteReview(int id)
         {
             var review = await _serviceManager.ReviewService.GetById(id);
             if (review == null)
@@ -82,5 +88,13 @@ namespace SportRentHub.Controllers
             await _serviceManager.ReviewService.Delete(id);
             return Ok();
         }
-    }
+		[HttpPost("search")]
+		[Authorize(Roles = "Admin, User")]
+		public async Task<IActionResult> Search(ReviewSearchDto search)
+		{
+			var searchList = await _serviceManager.ReviewService.Search(search);
+			if (!searchList.Any()) return Ok(searchList);
+			return Ok(searchList);
+		}
+	}
 }

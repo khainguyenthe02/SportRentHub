@@ -17,5 +17,7 @@
         public string ContactPerson { get; set; }
         public string ContactPhone { get; set; }
         public int? Status { get; set; }
+        public TimeSpan StartTime { get; set; }
+        public TimeSpan EndTime { get; set; }
     }
 }

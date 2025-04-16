@@ -9,8 +9,14 @@ using Mapster;
 using Microsoft.Extensions.Hosting;
 using SportRentHub.Entities.Models;
 using SportRentHub.Entities.DTOs.Court;
+using SportRentHub.Entities.Extensions;
+using SportRentHub.Entities;
+using VNPAY.NET;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.ConfigureLogging();
+
 
 // Add services to the container.
 
@@ -18,11 +24,17 @@ builder.Services.AddControllers();
 
 //Maspster configuration 
 TypeAdapterConfig<Court, CourtDto>.NewConfig()
-    .Ignore(dest => dest.Images);
-TypeAdapterConfig<Court, CourtDto>.NewConfig()
-    .Map(court => court.Images, courtDto => !string.IsNullOrEmpty(courtDto.Images)
-        ? courtDto.Images.Split(new[] { ',' }, StringSplitOptions.None).ToList()
-        : new List<string>());
+	.Map(dest => dest.Images, src =>
+		!string.IsNullOrEmpty(src.Images)
+		? src.Images.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
+		: new List<string>());
+
+TypeAdapterConfig<CourtDto, Court>.NewConfig()
+	.Map(dest => dest.Images, src =>
+		src.Images != null && src.Images.Any()
+		? string.Join(",", src.Images)
+		: string.Empty);
+TypeAdapterConfig.GlobalSettings.Compile();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -63,10 +75,15 @@ builder.Services.AddCors(option =>
 {
     option.AddPolicy("policy", builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyHeader().AllowAnyMethod());
 });
-
+builder.Services.ConfigureJwt(builder.Configuration);
 
 builder.Services.AddSingleton<IServiceManager, ServiceManager>();
 builder.Services.AddSingleton<IRepositoryManager, RepositoryManager>();
+builder.Services.AddHttpsRedirection(options =>
+{
+	options.RedirectStatusCode = StatusCodes.Status308PermanentRedirect;
+	options.HttpsPort = 443;
+});
 
 DefaultTypeMap.MatchNamesWithUnderscores = true;
 
