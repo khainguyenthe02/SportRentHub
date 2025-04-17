@@ -21,7 +21,6 @@
     }
     public enum  BookingStatus
     {
-        PENDING, // đang chờ xác nhận
         BOOKED, // đã đặt
         UNPAID, // chưa thanh toán
         PAID, // đã thanh toán
@@ -35,9 +34,4 @@
         PAID, // đã thanh toán
         CANCELED, // đã hủy
     }
-    public enum PaymentStatus
-	{
-		UN_PAID,
-		PAID
-	}
 }

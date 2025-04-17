@@ -106,92 +106,99 @@ namespace SportRentHub.Controllers
 			}
 		}
 
-		[HttpGet("Callback")]
-		public async Task<ActionResult<string>> Callback()
-		{
-			if (Request.QueryString.HasValue)
-			{
-				try
-				{
-					var paymentResult = _vnpay.GetPaymentResult(Request.Query);
-					var resultDescription = $"{paymentResult.PaymentResponse.Description}. {paymentResult.TransactionStatus.Description}.";
+        [HttpGet("Callback")]
+        public async Task<IActionResult> Callback()
+        {
+            var successUrl = _configuration["URL_PaymentResult:URL_Success"];
+            var failUrl = _configuration["URL_PaymentResult:URL_Failed"];
 
-					if (paymentResult.IsSuccess)
-					{
-						string orderInfo = Request.Query["vnp_OrderInfo"];
-						if (!int.TryParse(orderInfo, out int paymentId))
-						{
-							return BadRequest("Không đọc được paymentId từ vnp_OrderInfo.");
-						}
-						var payment = await _serviceManager.PaymentService.GetById(paymentId);
-						if (payment == null)
-						{
-							return NotFound("Không tìm thấy thông tin thanh toán.");
-						}
-						if(payment.Status == (int)PaymentStatus.PAID)
-						{
-							return BadRequest("Thanh toán đã được thực hiện trước đó.");
-						}
+            if (!Request.QueryString.HasValue)
+            {
+                return GenerateHtmlRedirect(failUrl, "Không tìm thấy thông tin thanh toán.");
+            }
 
-						var updateDto = new PaymentUpdateDto
-						{
-							Id = paymentId,
-							Status = (int)PaymentStatus.PAID,
-						};
-						var result = await _serviceManager.PaymentService.Update(updateDto);
-						if (!result)
-						{
-							return BadRequest("Cập nhật trạng thái thanh toán thất bại.");
-						}
+            try
+            {
+                var paymentResult = _vnpay.GetPaymentResult(Request.Query);
+                if (!paymentResult.IsSuccess)
+                {
+                    return GenerateHtmlRedirect(failUrl, "Thanh toán thất bại.");
+                }
 
-						// Tạo HTML trả về cho người dùng
-						string htmlContent = @"
-                    <html>
-                        <head>
-                            <title>Thanh toán thành công</title>
-							<meta charset='UTF-8'>
-                            <style>
-                                body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-                                h1 { color: green; }
-                                .button {
-                                    background-color: #4CAF50;
-                                    color: white;
-                                    padding: 15px 32px;
-                                    text-align: center;
-                                    text-decoration: none;
-                                    display: inline-block;
-                                    font-size: 16px;
-                                    border-radius: 4px;
-                                    margin-top: 20px;
-                                }
-                                .button:hover {
-                                    background-color: #45a049;
-                                }
-                            </style>
-                        </head>
-                        <body>
-                            <h1>Thanh toán thành công!</h1>
-                            <p>Cảm ơn bạn đã thanh toán. Đơn hàng của bạn đã được xử lý.</p>
-                            <p>Thông tin thanh toán: " + resultDescription + @". Vui lòng quay lại</p>
-                        </body>
-                    </html>";
+                string orderInfo = Request.Query["vnp_OrderInfo"];
+                if (!int.TryParse(orderInfo, out int paymentId))
+                {
+                    return GenerateHtmlRedirect(failUrl, "Không đọc được mã thanh toán.");
+                }
 
-						return Content(htmlContent, "text/html");
-					}
+                var payment = await _serviceManager.PaymentService.GetById(paymentId);
+                if (payment == null)
+                {
+                    return GenerateHtmlRedirect(failUrl, "Không tìm thấy thanh toán tương ứng.");
+                }
 
-					return BadRequest(resultDescription);
-				}
-				catch (Exception ex)
-				{
-					return BadRequest(ex.Message);
-				}
-			}
+                if (payment.Status == (int)PaymentStatus.PAID)
+                {
+                    return GenerateHtmlRedirect(successUrl, "Thanh toán đã được xử lý trước đó.");
+                }
 
-			return NotFound("Không tìm thấy thông tin thanh toán.");
-		}
+                var updatePayment = new PaymentUpdateDto
+                {
+                    Id = paymentId,
+                    Status = (int)PaymentStatus.PAID
+                };
+                var updatePaymentResult = await _serviceManager.PaymentService.Update(updatePayment);
+                if (!updatePaymentResult)
+                {
+                    return GenerateHtmlRedirect(failUrl, "Cập nhật trạng thái thanh toán thất bại.");
+                }
+
+                var booking = await _serviceManager.BookingService.GetById(payment.BookingId);
+                if (booking != null && booking.Status == (int)BookingStatus.UNPAID)
+                {
+                    var updateBooking = new BookingUpdateDto
+                    {
+                        Id = booking.Id,
+                        Status = (int)BookingStatus.PAID
+                    };
+                    await _serviceManager.BookingService.Update(updateBooking);
+                }
+
+                return GenerateHtmlRedirect(successUrl, "Thanh toán thành công. Đang chuyển hướng...");
+            }
+            catch (Exception)
+            {
+                return GenerateHtmlRedirect(failUrl, "Đã xảy ra lỗi khi xử lý thanh toán.");
+            }
+        }
+
+        /// <summary>
+        /// Trả về HTML có <meta> redirect để hỗ trợ redirect trên host như Somee.
+        /// </summary>
+        private IActionResult GenerateHtmlRedirect(string url, string message)
+        {
+            string html = $@"
+				<html>
+				  <head>
+					<meta charset='utf-8' />
+					<meta http-equiv='refresh' content='1;url={url}' />
+					<title>Đang chuyển hướng...</title>
+					<style>
+					  body {{ font-family: Arial, sans-serif; text-align: center; padding: 50px; }}
+					  h1 {{ color: green; }}
+					</style>
+				  </head>
+				  <body>
+					<h1>{message}</h1>
+					<p>Nếu bạn không được chuyển hướng, <a href='{url}'>nhấn vào đây</a>.</p>
+				  </body>
+				</html>";
+            return Content(html, "text/html");
+        }
 
 
-		[HttpGet("id/{id}")]
+
+        [HttpGet("id/{id}")]
 		[Authorize(Roles = "Admin, User")]
 		public async Task<IActionResult> GetPaymentById(int id)
 		{

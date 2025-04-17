@@ -4,6 +4,7 @@ using SportRentHub.Entities.DTOs.Booking;
 using SportRentHub.Entities.DTOs.ChildCourt;
 using SportRentHub.Entities.DTOs.Court;
 using SportRentHub.Entities.DTOs.User;
+using SportRentHub.Entities.Enum;
 using SportRentHub.Entities.Models;
 using SportRentHub.Repositories.Interfaces;
 using SportRentHub.Services.Interfaces;
@@ -24,6 +25,7 @@ namespace SportRentHub.Services
             {
                 var booking = create.Adapt<Booking>();
                 booking.CreateDate = DateTime.Now;
+                booking.Status = (int)BookingStatus.BOOKED;
 
                 var result = await _repositoryManager.BookingRepository.Create(booking);
                 return result;

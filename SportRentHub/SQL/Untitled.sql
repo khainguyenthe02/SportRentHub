@@ -59,7 +59,7 @@ CREATE TABLE tbl_review (
   id INT IDENTITY(1,1) PRIMARY KEY,
   user_id INT,
   court_id INT,
-  content VARCHAR(MAX),
+  content NVARCHAR(MAX),
   rating_star INT,
   create_date DATETIME,
   update_date DATETIME
