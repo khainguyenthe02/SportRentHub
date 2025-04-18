@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using SportRentHub.Controllers;
 using SportRentHub.Entities.Const;
@@ -17,17 +18,18 @@ namespace Test
     {
         private readonly Mock<IServiceManager> _mockServiceManager;
         private readonly Mock<IPaymentService> _mockPaymentService;
+        private readonly Mock<IConfiguration> _mockConfiguration;
         private readonly PaymentController _controller;
 
         public UTPayment()
-        {
+        { 
             _mockServiceManager = new Mock<IServiceManager>();
             _mockPaymentService = new Mock<IPaymentService>();
 
             // Setup service manager to return payment service
             _mockServiceManager.Setup(s => s.PaymentService).Returns(_mockPaymentService.Object);
 
-            _controller = new PaymentController(_mockServiceManager.Object);
+            _controller = new PaymentController(_mockServiceManager.Object, _mockConfiguration.Object);
         }
 
         #region GetPaymentById Tests
