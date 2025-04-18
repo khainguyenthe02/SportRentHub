@@ -75,11 +75,18 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("policy", policy =>
     {
-        policy.WithOrigins("https://learn-eight-ebon.vercel.app")
+        policy.WithOrigins("https://learn-eight-ebon.vercel.app", "https://localhost:8386")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("policy", policy =>
+//    {
+//        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+//    });
+//});
 builder.Services.ConfigureJwt(builder.Configuration);
 
 builder.Services.AddSingleton<IServiceManager, ServiceManager>();
@@ -104,7 +111,8 @@ app.UseDeveloperExceptionPage();
 
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
+app.UseMiddleware<TokenValidationMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();

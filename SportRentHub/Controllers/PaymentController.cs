@@ -154,7 +154,7 @@ namespace SportRentHub.Controllers
                 }
 
                 var booking = await _serviceManager.BookingService.GetById(payment.BookingId);
-                if (booking != null && booking.Status == (int)BookingStatus.UNPAID)
+                if (booking != null && booking.Status == (int)BookingStatus.BOOKED)
                 {
                     var updateBooking = new BookingUpdateDto
                     {
