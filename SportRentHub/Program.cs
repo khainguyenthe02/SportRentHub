@@ -71,14 +71,27 @@ builder.Services.AddSwaggerGen(c =>
         });
 
 });
-builder.Services.AddCors(option =>
+builder.Services.AddCors(options =>
 {
-    option.AddPolicy("policy", builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyHeader().AllowAnyMethod());
+    options.AddPolicy("policy", policy =>
+    {
+        policy.WithOrigins("https://learn-eight-ebon.vercel.app", "https://localhost:8386")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
 });
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("policy", policy =>
+//    {
+//        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+//    });
+//});
 builder.Services.ConfigureJwt(builder.Configuration);
 
 builder.Services.AddSingleton<IServiceManager, ServiceManager>();
 builder.Services.AddSingleton<IRepositoryManager, RepositoryManager>();
+builder.Services.AddHostedService<BookingAutoUpdateService>();
 builder.Services.AddHttpsRedirection(options =>
 {
 	options.RedirectStatusCode = StatusCodes.Status308PermanentRedirect;
@@ -98,7 +111,8 @@ app.UseDeveloperExceptionPage();
 
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
+app.UseMiddleware<TokenValidationMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();

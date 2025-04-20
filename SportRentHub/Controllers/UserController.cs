@@ -38,7 +38,7 @@ namespace SportRentHub.Controllers
             return Ok(userDto);
         }
         [HttpGet("get-list")]
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = "Admin, User" )]
 		public async Task<IActionResult> GetUsers()
         {
             List<UserDto> userDto;
@@ -47,7 +47,7 @@ namespace SportRentHub.Controllers
             return Ok(userDto);
         }
         [HttpPost("create")]
-		[Authorize(Roles = "Admin, User")]
+		
 		public async Task<IActionResult> CreateUser([FromBody] UserCreateDto createUserDto)
         {
             // Kiểm tra email có trùng hay không
@@ -146,7 +146,7 @@ namespace SportRentHub.Controllers
             var token = new JwtSecurityToken(_config["Tokens:Issuer"],
                 _config["Tokens:Issuer"],
                 claims,
-                expires: DateTime.Now.AddHours(4),
+                expires: DateTime.Now.AddDays(4),
                 signingCredentials: creds);
             string jwtToken = new JwtSecurityTokenHandler().WriteToken(token);
             var updateUser = new UserUpdateDto
@@ -204,7 +204,7 @@ namespace SportRentHub.Controllers
         [Authorize()]
         public async Task<IActionResult> Logout()
         {
-			var userId = User.FindFirstValue("employeeId");
+			var userId = User.FindFirstValue("userId");
 			if (string.IsNullOrEmpty(userId) || !int.TryParse(userId, out var userID))
 			{
 				return BadRequest("Không thể tìm thấy người dùng");

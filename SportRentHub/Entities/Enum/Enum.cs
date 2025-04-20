@@ -14,12 +14,24 @@
     }
     public enum CourtStatus
     {
-        UN_PAID,
-        PAID
+        ACTIVE, // đang hoạt động
+        REPAIR_PART, // đang sửa chữa 1 phần
+        REPAIR_ALL, // đang sửa chữa toàn bộ
+        INACTIVE // ngừng hoạt động
+    }
+    public enum  BookingStatus
+    {
+        BOOKED, // đã đặt
+        UNPAID, // chưa thanh toán
+        PAID, // đã thanh toán
+        CANCELED, // đã hủy
+        REFUNDED // đã hoàn tiền
+
     }
     public enum PaymentStatus
-	{
-		UN_PAID,
-		PAID
-	}
+    {
+        UN_PAID, // chưa thanh toán
+        PAID, // đã thanh toán
+        CANCELED, // đã hủy
+    }
 }
