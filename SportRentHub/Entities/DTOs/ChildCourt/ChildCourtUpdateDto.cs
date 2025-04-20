@@ -8,5 +8,7 @@
 		public string? ChildCourtDescription { get; set; }
 		public string? Position { get; set; }
 		public float? RentCost { get; set; }
+		public float? FixedRentCost { get; set; }
+
 	}
 }

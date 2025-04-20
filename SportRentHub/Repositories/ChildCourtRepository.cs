@@ -17,8 +17,8 @@ namespace SportRentHub.Repositories
 		public async Task<bool> Create(ChildCourt create)
 		{
 			var result = await _dbService.EditData(
-				"INSERT INTO tbl_child_court (court_id, child_court_name, child_court_description, position, rent_cost) " +
-				"VALUES (@CourtId, @ChildCourtName, @ChildCourtDescription, @Position, @RentCost)",
+				"INSERT INTO tbl_child_court (court_id, child_court_name, child_court_description, position, rent_cost, fixed_rent_cost) " +
+				"VALUES (@CourtId, @ChildCourtName, @ChildCourtDescription, @Position, @RentCost, @FixedRentCost)",
 				create);
 
 			return result > 0;
@@ -107,6 +107,11 @@ namespace SportRentHub.Repositories
 			if (update.RentCost > 0)
 			{
 				updateSql += "rent_cost = @RentCost, ";
+				hasChanged = true;
+			}
+			if(update.FixedRentCost > 0)
+			{
+				updateSql += "fixed_rent_cost = @FixedRentCost, ";
 				hasChanged = true;
 			}
 
