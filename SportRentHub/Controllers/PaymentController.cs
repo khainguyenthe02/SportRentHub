@@ -24,7 +24,8 @@ namespace SportRentHub.Controllers
 		private readonly IVnpay _vnpay;
 		private readonly IConfiguration _configuration;
 
-		public PaymentController(IServiceManager serviceManager, IConfiguration configuration)
+
+        public PaymentController(IServiceManager serviceManager, IConfiguration configuration)
 		{
 			_serviceManager = serviceManager;
 			_configuration = configuration;

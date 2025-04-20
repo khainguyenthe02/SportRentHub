@@ -29,6 +29,8 @@ namespace Test
             // Setup service manager to return payment service
             _mockServiceManager.Setup(s => s.PaymentService).Returns(_mockPaymentService.Object);
 
+            _mockConfiguration = new Mock<IConfiguration>();
+
             _controller = new PaymentController(_mockServiceManager.Object, _mockConfiguration.Object);
         }
 
