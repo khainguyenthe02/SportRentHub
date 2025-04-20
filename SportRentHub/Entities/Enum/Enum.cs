@@ -33,5 +33,7 @@
         UN_PAID, // chưa thanh toán
         PAID, // đã thanh toán
         CANCELED, // đã hủy
-    }
+		UNPAID_FOR_ADMIN, // chưa thanh toán cho admin
+		PAID_FOR_ADMIN, // đã thanh toán cho admin
+	}
 }
