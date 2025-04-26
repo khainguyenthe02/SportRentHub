@@ -14,14 +14,14 @@ using System.Threading.Tasks;
 
 namespace Test
 {
-    public class UTCourt
+    public class UTCourtController
     {
         private readonly Mock<IServiceManager> _mockServiceManager;
         private readonly Mock<ICourtService> _mockCourtService;
         private readonly Mock<IChildCourtService> _mockChildCourtService;
         private readonly CourtController _controller;
 
-        public UTCourt()
+        public UTCourtController()
         {
             _mockCourtService = new Mock<ICourtService>();
             _mockChildCourtService = new Mock<IChildCourtService>();

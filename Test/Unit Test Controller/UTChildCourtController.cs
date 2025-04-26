@@ -14,14 +14,14 @@ using System.Threading.Tasks;
 
 namespace Test
 {
-    public class UTChildCourt
+    public class UTChildCourtController
     {
         private readonly Mock<IServiceManager> _mockServiceManager;
         private readonly Mock<IChildCourtService> _mockChildCourtService;
         private readonly Mock<ICourtService> _mockCourtService;
         private readonly ChildCourtController _controller;
 
-        public UTChildCourt()
+        public UTChildCourtController()
         {
             _mockChildCourtService = new Mock<IChildCourtService>();
             _mockCourtService = new Mock<ICourtService>();
@@ -273,7 +273,7 @@ namespace Test
             Assert.Equal(1, returnedChildCourt.Id);
             Assert.Equal("New Child Court", returnedChildCourt.ChildCourtName);
             Assert.Equal(1, returnedChildCourt.CourtId);
-            Assert.Equal(75, returnedChildCourt.RentCost);
+            Assert.Equal(75, returnedChildCourt.RentCost);  
         }
 
         [Fact]

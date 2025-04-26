@@ -13,13 +13,13 @@ using System.Threading.Tasks;
 
 namespace Test
 {
-    public class UTBooking
+    public class UTBookingController
     {
         private readonly Mock<IServiceManager> _mockServiceManager;
         private readonly Mock<IBookingService> _mockBookingService;
         private readonly BookingController _controller;
 
-        public UTBooking()
+        public UTBookingController()
         {
             _mockBookingService = new Mock<IBookingService>();
             _mockServiceManager = new Mock<IServiceManager>();

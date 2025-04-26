@@ -13,13 +13,13 @@ using System.Threading.Tasks;
 
 namespace Test
 {
-    public class UTReview
+    public class UTReviewController
     {
         private readonly Mock<IServiceManager> _mockServiceManager;
         private readonly Mock<IReviewService> _mockReviewService;
         private readonly ReviewController _controller;
 
-        public UTReview()
+        public UTReviewController()
         {
             _mockServiceManager = new Mock<IServiceManager>();
             _mockReviewService = new Mock<IReviewService>();
