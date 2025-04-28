@@ -12,7 +12,7 @@ namespace SportRentHub.Entities.DTOs.Booking
 		public DateTime EndTime { get; set; }
 		public int Status { get; set; }
         public float Price { get; set; }
-        public string UserFullName { get; set; }
+        public string UserFullName { get; set; } 
         public string UserPhoneNumber { get; set; }
         public string ChildCourtName { get; set; }
         public int CourtId { get; set; }
@@ -20,5 +20,7 @@ namespace SportRentHub.Entities.DTOs.Booking
 		public string CourtDistrict { get; set; }
 		public string CourtWard { get; set; }
 		public string CourtStreet { get; set; }
+		public int Type { get; set; }
+		public float Quantity { get; set; }
 	}
 }
