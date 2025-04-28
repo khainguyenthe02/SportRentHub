@@ -8,5 +8,6 @@
 		public int? Status { get; set; }
         public DateTime? EndTime { get; set; }
         public List<int>? IdLst { get; set; }
-    }
+		public int? Type { get; set; }
+	}
 }

@@ -13,6 +13,7 @@ using VNPAY.NET.Utilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using SportRentHub.Entities.Enum;
+using System.Collections.Generic;
 
 namespace SportRentHub.Controllers
 {
@@ -106,77 +107,217 @@ namespace SportRentHub.Controllers
 				return BadRequest(ex.Message);
 			}
 		}
+		[HttpGet("CreatePaymentUrlForList")]
+		[Authorize(Roles = "Admin, User")]
+		public async Task<ActionResult> CreatePaymentUrlAsync([FromQuery] List<int> paymentIds)
+		{
+			try
+			{
+				if (!paymentIds.Any()) { return BadRequest("Danh sách paymentIds không được rỗng."); }
 
-        [HttpGet("Callback")]
-        public async Task<IActionResult> Callback()
-        {
-            var successUrl = _configuration["URL_PaymentResult:URL_Success"];
-            var failUrl = _configuration["URL_PaymentResult:URL_Failed"];
+				var ipAddress = NetworkHelper.GetIpAddress(HttpContext);
+				double totalMoneyToPay = 0;
+				var paymentDescriptions = new List<string>();
 
-            if (!Request.QueryString.HasValue)
-            {
-                return GenerateHtmlRedirect(failUrl, "Không tìm thấy thông tin thanh toán.");
-            }
+				foreach (var paymentId in paymentIds)
+				{
+					var payment = await _serviceManager.PaymentService.GetById(paymentId);
+					if (payment == null)
+					{
+						return NotFound($"Không tìm thấy thông tin thanh toán cho paymentId: {paymentId}.");
+					}
+					if (payment.Status == (int)PaymentStatus.PAID)
+					{
+						return BadRequest($"Thanh toán cho paymentId: {paymentId} đã được thực hiện trước đó.");
+					}
 
-            try
-            {
-                var paymentResult = _vnpay.GetPaymentResult(Request.Query);
-                if (!paymentResult.IsSuccess)
-                {
-                    return GenerateHtmlRedirect(failUrl, "Thanh toán thất bại.");
-                }
+					totalMoneyToPay += payment.Price;
+					paymentDescriptions.Add(paymentId.ToString());
+				}
 
-                string orderInfo = Request.Query["vnp_OrderInfo"];
-                if (!int.TryParse(orderInfo, out int paymentId))
-                {
-                    return GenerateHtmlRedirect(failUrl, "Không đọc được mã thanh toán.");
-                }
+				var request = new PaymentRequest
+				{
+					PaymentId = DateTime.Now.Ticks,
+					Money = totalMoneyToPay,
+					Description = string.Join(",", paymentDescriptions),
+					IpAddress = ipAddress,
+					BankCode = BankCode.ANY,
+					CreatedDate = DateTime.Now.AddHours(12),
+					Currency = Currency.VND,
+					Language = DisplayLanguage.Vietnamese
+				};
 
-                var payment = await _serviceManager.PaymentService.GetById(paymentId);
-                if (payment == null)
-                {
-                    return GenerateHtmlRedirect(failUrl, "Không tìm thấy thanh toán tương ứng.");
-                }
+				var paymentUrl = _vnpay.GetPaymentUrl(request);
+				return Created(paymentUrl, paymentUrl);
+			}
+			catch (Exception ex)
+			{
+				return BadRequest(ex.Message);
+			}
 
-                if (payment.Status == (int)PaymentStatus.PAID)
-                {
-                    return GenerateHtmlRedirect(successUrl, "Thanh toán đã được xử lý trước đó.");
-                }
+		}
+		[HttpGet("Callback")]
+		public async Task<IActionResult> Callback()
+		{
+			var successUrl = _configuration["URL_PaymentResult:URL_Success"]; 
+			var failUrl = _configuration["URL_PaymentResult:URL_Failed"];
 
-                var updatePayment = new PaymentUpdateDto
-                {
-                    Id = paymentId,
-                    Status = (int)PaymentStatus.PAID
-                };
-                var updatePaymentResult = await _serviceManager.PaymentService.Update(updatePayment);
-                if (!updatePaymentResult)
-                {
-                    return GenerateHtmlRedirect(failUrl, "Cập nhật trạng thái thanh toán thất bại.");
-                }
+			if (!Request.QueryString.HasValue)
+			{
+				return GenerateHtmlRedirect(failUrl, "Không tìm thấy thông tin thanh toán.");
+			}
 
-                var booking = await _serviceManager.BookingService.GetById(payment.BookingId);
-                if (booking != null && booking.Status == (int)BookingStatus.BOOKED)
-                {
-                    var updateBooking = new BookingUpdateDto
-                    {
-                        Id = booking.Id,
-                        Status = (int)BookingStatus.PAID
-                    };
-                    await _serviceManager.BookingService.Update(updateBooking);
-                }
+			try
+			{
+				var paymentResult = _vnpay.GetPaymentResult(Request.Query);
+				if (!paymentResult.IsSuccess)
+				{
+					return GenerateHtmlRedirect(failUrl, "Thanh toán thất bại.");
+				}
 
-                return GenerateHtmlRedirect(successUrl, "Thanh toán thành công. Đang chuyển hướng...");
-            }
-            catch (Exception)
-            {
-                return GenerateHtmlRedirect(failUrl, "Đã xảy ra lỗi khi xử lý thanh toán.");
-            }
-        }
+				string orderInfo = Request.Query["vnp_OrderInfo"];
+				if (string.IsNullOrEmpty(orderInfo))
+				{
+					return GenerateHtmlRedirect(failUrl, "Không đọc được thông tin thanh toán.");
+				}
 
-        /// <summary>
-        /// Trả về HTML có <meta> redirect để hỗ trợ redirect trên host như Somee.
-        /// </summary>
-        private IActionResult GenerateHtmlRedirect(string url, string message)
+				// Tách orderInfo thành danh sách paymentIds (hỗ trợ cả đơn lẻ và danh sách)
+				var paymentIds = orderInfo.Contains(",")
+					? orderInfo.Split(',').Select(id => int.TryParse(id, out int parsedId) ? parsedId : -1).Where(id => id != -1).ToList()
+					: new List<int> { int.TryParse(orderInfo, out int singleId) ? singleId : -1 };
+
+				if (!paymentIds.Any() || paymentIds.Contains(-1))
+				{
+					return GenerateHtmlRedirect(failUrl, "Mã thanh toán không hợp lệ.");
+				}
+
+				// Kiểm tra số tiền (tùy chọn, để đảm bảo an toàn)
+				double vnpAmount = double.Parse(Request.Query["vnp_Amount"]) / 100;
+				var payments = await _serviceManager.PaymentService.Search(new PaymentSearchDto { IdLst = paymentIds});
+				double totalAmount = payments.Where(p => p != null).Sum(p => p.Price);
+				if (vnpAmount != totalAmount)
+				{
+					return GenerateHtmlRedirect(failUrl, "Số tiền thanh toán không khớp.");
+				}
+
+				// Xử lý từng paymentId
+				foreach (var paymentId in paymentIds)
+				{
+					var payment = payments.FirstOrDefault(p => p.Id == paymentId);
+					if (payment == null)
+					{
+						continue; // Bỏ qua nếu không tìm thấy
+					}
+
+					if (payment.Status == (int)PaymentStatus.PAID)
+					{
+						continue; // Thanh toán đã được xử lý
+					}
+
+					// Cập nhật trạng thái thanh toán
+					var updatePayment = new PaymentUpdateDto
+					{
+						Id = paymentId,
+						Status = (int)PaymentStatus.PAID_FOR_ADMIN,
+					};
+					var updatePaymentResult = await _serviceManager.PaymentService.Update(updatePayment);
+					if (!updatePaymentResult)
+					{
+						return GenerateHtmlRedirect(failUrl, $"Cập nhật trạng thái thanh toán thất bại cho paymentId: {paymentId}.");
+					}
+
+					// Cập nhật trạng thái booking liên quan
+					var booking = await _serviceManager.BookingService.GetById(payment.BookingId);
+					if (booking != null && booking.Status == (int)BookingStatus.BOOKED)
+					{
+						var updateBooking = new BookingUpdateDto
+						{
+							Id = booking.Id,
+							Status = (int)BookingStatus.PAID
+						};
+						await _serviceManager.BookingService.Update(updateBooking);
+					}
+				}
+
+				return GenerateHtmlRedirect(successUrl, "Thanh toán thành công. Đang chuyển hướng...");
+			}
+			catch (Exception ex)
+			{
+				return GenerateHtmlRedirect(failUrl, $"Đã xảy ra lỗi khi xử lý thanh toán: {ex.Message}");
+			}
+
+		}
+
+		//[HttpGet("Callback")]
+		//      public async Task<IActionResult> Callback()
+		//      {
+		//          var successUrl = _configuration["URL_PaymentResult:URL_Success"];
+		//          var failUrl = _configuration["URL_PaymentResult:URL_Failed"];
+
+		//          if (!Request.QueryString.HasValue)
+		//          {
+		//              return GenerateHtmlRedirect(failUrl, "Không tìm thấy thông tin thanh toán.");
+		//          }
+
+		//          try
+		//          {
+		//              var paymentResult = _vnpay.GetPaymentResult(Request.Query);
+		//              if (!paymentResult.IsSuccess)
+		//              {
+		//                  return GenerateHtmlRedirect(failUrl, "Thanh toán thất bại.");
+		//              }
+
+		//              string orderInfo = Request.Query["vnp_OrderInfo"];
+		//              if (!int.TryParse(orderInfo, out int paymentId))
+		//              {
+		//                  return GenerateHtmlRedirect(failUrl, "Không đọc được mã thanh toán.");
+		//              }
+
+		//              var payment = await _serviceManager.PaymentService.GetById(paymentId);
+		//              if (payment == null)
+		//              {
+		//                  return GenerateHtmlRedirect(failUrl, "Không tìm thấy thanh toán tương ứng.");
+		//              }
+
+		//              if (payment.Status == (int)PaymentStatus.PAID)
+		//              {
+		//                  return GenerateHtmlRedirect(successUrl, "Thanh toán đã được xử lý trước đó.");
+		//              }
+
+		//              var updatePayment = new PaymentUpdateDto
+		//              {
+		//                  Id = paymentId,
+		//                  Status = (int)PaymentStatus.PAID
+		//              };
+		//              var updatePaymentResult = await _serviceManager.PaymentService.Update(updatePayment);
+		//              if (!updatePaymentResult)
+		//              {
+		//                  return GenerateHtmlRedirect(failUrl, "Cập nhật trạng thái thanh toán thất bại.");
+		//              }
+
+		//              var booking = await _serviceManager.BookingService.GetById(payment.BookingId);
+		//              if (booking != null && booking.Status == (int)BookingStatus.BOOKED)
+		//              {
+		//                  var updateBooking = new BookingUpdateDto
+		//                  {
+		//                      Id = booking.Id,
+		//                      Status = (int)BookingStatus.PAID
+		//                  };
+		//                  await _serviceManager.BookingService.Update(updateBooking);
+		//              }
+
+		//              return GenerateHtmlRedirect(successUrl, "Thanh toán thành công. Đang chuyển hướng...");
+		//          }
+		//          catch (Exception)
+		//          {
+		//              return GenerateHtmlRedirect(failUrl, "Đã xảy ra lỗi khi xử lý thanh toán.");
+		//          }
+		//      }
+
+		/// <summary>
+		/// Trả về HTML có <meta> redirect để hỗ trợ redirect trên host như Somee.
+		/// </summary>
+		private IActionResult GenerateHtmlRedirect(string url, string message)
         {
             string html = $@"
 				<html>

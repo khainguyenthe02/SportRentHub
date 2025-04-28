@@ -17,8 +17,8 @@ namespace SportRentHub.Repositories
         public async Task<bool> Create(Booking booking)
         {
             var result = await _dbService.EditData(
-                "INSERT INTO tbl_booking (user_id, child_court_id, create_date, start_time, end_time, status, price) " +
-                "VALUES (@UserId, @ChildCourtId, @CreateDate, @StartTime, @EndTime, @Status, @Price)",
+                "INSERT INTO tbl_booking (user_id, child_court_id, create_date, start_time, end_time, status, price, type, quantity) " +
+                "VALUES (@UserId, @ChildCourtId, @CreateDate, @StartTime, @EndTime, @Status, @Price, @Type, @Quantity)",
                 booking);
 
             return result > 0;
@@ -81,8 +81,12 @@ namespace SportRentHub.Repositories
             {
                 whereSql += " AND status = @Status";
             }
+            if(search.Type != null)
+			{
+				whereSql += " AND type = @Type";
+			}
 
-            whereSql += " ORDER BY id DESC";
+			whereSql += " ORDER BY id DESC";
 
             var bookingList = await _dbService.GetAll<Booking>(selectSql + whereSql, search);
             return bookingList;
@@ -123,8 +127,19 @@ namespace SportRentHub.Repositories
                 updateSql += "price = @Price, ";
                 hasChanged = true;
             }
+			if (booking.Type.HasValue)
+			{
+				updateSql += "type = @Type, ";
+				hasChanged = true;
+			}
+			if (booking.Quantity.HasValue)
+			{
+				updateSql += "quantity = @Quantity, ";
+				hasChanged = true;
+			}
+			// Remove the last comma and space if there were any changes
 
-            if (!hasChanged)
+			if (!hasChanged)
             {
                 return false;
             }
