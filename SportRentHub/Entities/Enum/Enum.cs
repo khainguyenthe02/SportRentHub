@@ -2,10 +2,8 @@
 {
     public enum RoleType
     {
-        TECHNICAL,
-        ACCOUNTANT,
-        SALES,
-        ADMIN = 999
+		USER = 1,
+		ADMIN = 999
     }
     public enum ComponentType
     {
@@ -28,7 +26,19 @@
         REFUNDED // đã hoàn tiền
 
     }
-    public enum PaymentStatus
+	public enum AccountStatus
+	{
+		BLOCK,
+		ACTIVE,
+	
+	}
+	public enum ReportStatus
+	{
+		PENDING,
+		ACCEPTED,
+		REJECTED
+	}
+	public enum PaymentStatus
     {
         UN_PAID, // chưa thanh toán
         PAID, // đã thanh toán

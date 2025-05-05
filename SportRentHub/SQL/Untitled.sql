@@ -74,4 +74,12 @@ CREATE TABLE tbl_payment (
   price FLOAT,
   type INT
 )
+CREATE TABLE tbl_report (
+  id INT IDENTITY(1,1) PRIMARY KEY,
+  user_id INT,
+  court_id INT,
+  content NVARCHAR(MAX),
+  create_date DATETIME,
+  status INT
+)
 GO

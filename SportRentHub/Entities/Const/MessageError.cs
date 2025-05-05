@@ -26,7 +26,7 @@
 
         public const string PostImageError = "Hình ảnh không khả dụng";
 
-        public const string UserOrPostNotExist = "Bài viết hoặc người dùng không tồn tại";
+        public const string UserOrPostNotExist = "Sân hoặc người dùng không tồn tại";
 
         public const string PostIsFavorited = "Bài viết đã được yêu thích trước đó, không thể tạo mới";
         public const string ReportLessThan24h = "Vui lòng đợi 24h tiếp theo để có thể báo cáo tiếp.";

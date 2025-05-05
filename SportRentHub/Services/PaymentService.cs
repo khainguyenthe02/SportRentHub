@@ -1,6 +1,7 @@
 ﻿using Mapster;
 using Serilog;
 using SportRentHub.Entities.DTOs.Booking;
+using SportRentHub.Entities.DTOs.ChildCourt;
 using SportRentHub.Entities.DTOs.Court;
 using SportRentHub.Entities.DTOs.Payment;
 using SportRentHub.Entities.DTOs.User;
@@ -57,7 +58,8 @@ namespace SportRentHub.Services
             try
             {
                 var payments = await _repositoryManager.PaymentRepository.GetAll();
-                return await FilterData(payments.Adapt<List<PaymentDto>>());
+                var result = payments.Adapt<List<PaymentDto>>();
+				return await FilterData(result);
             }
             catch (Exception ex)
             {
@@ -117,68 +119,73 @@ namespace SportRentHub.Services
         }
         public async Task<List<PaymentDto>> FilterData(List<PaymentDto> lst)
         {
-            if (lst.Any())
-            {
-                //adapter user
-                var userIdLst = lst.Where(item => item.UserId != 0).Select(item => item.UserId).ToList();
-                if (userIdLst.Any())
-                {
-                    var searchUser = new UserSearchDto
-                    {
-                        IdLst = userIdLst,
-                    };
-                    var userLst = (await _repositoryManager.UserRepository.Search(searchUser))
-                        .ToDictionary(u => u.Id, u => (u.Fullname, u.PhoneNumber));
-                    if (userLst.Any())
-                    {
-                        foreach (var item in lst)
-                        {
-                            if (item.UserId != 0 && userLst.ContainsKey(item.UserId))
-                            {
-                                item.UserFullname = userLst[item.UserId].Fullname;
-                                item.UserPhoneNumber = userLst[item.UserId].PhoneNumber;
-                            }
-                        }
-                    }
-                }
+			if (!lst.Any())
+				return lst;
 
-                // adapt court thông qua booking
-                var bookingIdLst = lst.Where(item => item.BookingId != 0).Select(item => item.BookingId).ToList();
-                if (bookingIdLst.Any())
-                {
-                    var searchBooking = new BookingSearchDto
-                    {
-                        IdLst = bookingIdLst,
-                    };
-                    var bookingLst = (await _repositoryManager.BookingRepository.Search(searchBooking))
-                        .ToDictionary(b => b.Id, b => b.ChildCourtId);
+			// Enrich user data
+			var userIdLst = lst.Where(item => item.UserId != 0).Select(item => item.UserId).Distinct().ToList();
+			if (userIdLst.Any())
+			{
+				var searchUser = new UserSearchDto { IdLst = userIdLst };
+				var userLst = await _repositoryManager.UserRepository.Search(searchUser);
+				if (userLst?.Any() == true)
+				{
+					var userDict = userLst.ToDictionary(u => u.Id, u => (u.Fullname, u.PhoneNumber));
+					foreach (var item in lst.Where(i => i.UserId != 0 && userDict.ContainsKey(i.UserId)))
+					{
+						item.UserFullname = userDict[item.UserId].Fullname;
+						item.UserPhoneNumber = userDict[item.UserId].PhoneNumber;
+					}
+				}
+			}
 
-                    var courtIdLst = bookingLst.Values.Distinct().ToList();
-                    if (courtIdLst.Any())
-                    {
-                        var searchCourt = new CourtSearchDto
-                        {
-                            IdLst = courtIdLst,
-                        };
-                        var courtLst = (await _repositoryManager.CourtRepository.Search(searchCourt))
-                            .ToDictionary(c => c.Id, c => (c.Id, c.CourtName));
+			// Enrich court data through Booking -> ChildCourt -> Court
+			var bookingIdLst = lst.Where(item => item.BookingId != 0).Select(item => item.BookingId).Distinct().ToList();
+			if (bookingIdLst.Any())
+			{
+				var searchBooking = new BookingSearchDto { IdLst = bookingIdLst };
+				var bookingLst = await _repositoryManager.BookingRepository.Search(searchBooking);
+				if (bookingLst?.Any() == true)
+				{
+					var bookingDict = bookingLst.ToDictionary(b => b.Id, b => b.ChildCourtId);
+					var childCourtIdLst = bookingDict.Values.Distinct().ToList();
+					if (childCourtIdLst.Any())
+					{
+						var searchChildCourt = new ChildCourtSearchDto { IdLst = childCourtIdLst };
+						var childCourtLst = await _repositoryManager.ChildCourtRepository.Search(searchChildCourt);
+						if (childCourtLst?.Any() == true)
+						{
+							var childCourtDict = childCourtLst.ToDictionary(cc => cc.Id, cc => cc.CourtId);
+							var courtIdLst = childCourtDict.Values.Distinct().ToList();
+							if (courtIdLst.Any())
+							{
+								var searchCourt = new CourtSearchDto { IdLst = courtIdLst };
+								var courtLst = await _repositoryManager.CourtRepository.Search(searchCourt);
+								if (courtLst?.Any() == true)
+								{
+									var courtDict = courtLst.ToDictionary(c => c.Id, c => (c.Id, c.CourtName));
+									foreach (var item in lst.Where(i => i.BookingId != 0 && bookingDict.ContainsKey(i.BookingId)))
+									{
+										var childCourtId = bookingDict[item.BookingId];
+										if (childCourtDict.ContainsKey(childCourtId))
+										{
+											var courtId = childCourtDict[childCourtId];
+											if (courtDict.ContainsKey(courtId))
+											{
+												item.CourtId = courtDict[courtId].Id;
+												item.CourtName = courtDict[courtId].CourtName;
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
 
-                        foreach (var item in lst)
-                        {
-                            if (item.BookingId != 0 && bookingLst.ContainsKey(item.BookingId))
-                            {
-                                var courtId = bookingLst[item.BookingId];
-                                if (courtLst.ContainsKey(courtId))
-                                {
-                                    item.CourtId = courtLst[courtId].Id;
-                                    item.CourtName = courtLst[courtId].CourtName;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            return lst;
-        }
-    }
+			return lst;
+
+		}
+	}
 }

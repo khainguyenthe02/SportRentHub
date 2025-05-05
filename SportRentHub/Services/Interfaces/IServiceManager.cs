@@ -9,5 +9,6 @@
         IBookingService BookingService { get; }
         IPaymentService PaymentService { get; }
         IChildCourtService ChildCourtService { get; }
-    }
+		IReportService ReportService { get; }
+	}
 }

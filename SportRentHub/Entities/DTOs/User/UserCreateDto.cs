@@ -9,5 +9,8 @@
         public string? Email { get; set; }
         public string? Address { get; set; }
         public int? Role { get; set; }
-    }
+		public string? BankNumber { get; set; }
+		public string? BankName { get; set; }
+		public string? BankAccount { get; set; }
+	}
 }
