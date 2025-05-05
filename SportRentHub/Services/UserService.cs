@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Serilog;
 using SportRentHub.Entities.DTOs.User;
+using SportRentHub.Entities.Enum;
 using SportRentHub.Entities.Models;
 using SportRentHub.Repositories.Interfaces;
 using SportRentHub.Services.Interfaces;
@@ -27,8 +28,8 @@ namespace SportRentHub.Services
                 var hashedPassword = Utils.Convert.ComputeSHA256Hash(create.Password, salt);
                 user.Password = hashedPassword;
                 user.Salt = salt;
-                
-                var result = await _repositoryManager.UserRepository.Create(user);
+                user.Status = (int)AccountStatus.ACTIVE;
+				var result = await _repositoryManager.UserRepository.Create(user);
                 return result;
             }
             catch (Exception ex)

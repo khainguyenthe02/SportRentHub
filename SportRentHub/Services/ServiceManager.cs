@@ -3,7 +3,7 @@ using SportRentHub.Services.Interfaces;
 
 namespace SportRentHub.Services
 {
-    public class ServiceManager : IServiceManager
+	public class ServiceManager : IServiceManager
     {
         private readonly Lazy<IUserService> _lazyUserService;
         private readonly Lazy<IEmailService> _lazyEmailService;
@@ -12,8 +12,9 @@ namespace SportRentHub.Services
         private readonly Lazy<IBookingService> _lazyBookingService;
         private readonly Lazy<IPaymentService> _lazyPaymentService;
         private readonly Lazy<IChildCourtService> _lazyChildCourtService;
+		private readonly Lazy<IReportService> _lazyReportService;
 
-        public ServiceManager(IRepositoryManager repositoryManager, IConfiguration configuration)
+		public ServiceManager(IRepositoryManager repositoryManager, IConfiguration configuration)
         {
             _lazyUserService = new Lazy<IUserService>(() => new UserService(repositoryManager));
             _lazyEmailService = new Lazy<IEmailService>(() => new EmailService(configuration));
@@ -21,8 +22,9 @@ namespace SportRentHub.Services
             _lazyReviewService = new Lazy<IReviewService>(() => new ReviewService(repositoryManager));
             _lazyBookingService = new Lazy<IBookingService>(() => new BookingService(repositoryManager));
             _lazyPaymentService = new Lazy<IPaymentService>(() => new PaymentService(repositoryManager));
-            _lazyChildCourtService = new Lazy<IChildCourtService> (() => new ChildCourtService(repositoryManager)); 
-        }
+            _lazyChildCourtService = new Lazy<IChildCourtService> (() => new ChildCourtService(repositoryManager));
+			_lazyReportService = new Lazy<IReportService>(() => new ReportService(repositoryManager));
+		}
 
         public IUserService UserService => _lazyUserService.Value;
 
@@ -37,5 +39,7 @@ namespace SportRentHub.Services
         public IPaymentService PaymentService => _lazyPaymentService.Value;
 
 		public IChildCourtService ChildCourtService => _lazyChildCourtService.Value;
+
+		public IReportService ReportService => _lazyReportService.Value;
 	}
 }

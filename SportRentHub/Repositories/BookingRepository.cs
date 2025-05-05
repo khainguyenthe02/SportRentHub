@@ -73,7 +73,7 @@ namespace SportRentHub.Repositories
             {
                 whereSql += " AND child_court_id = @ChildCourtId";
             }
-            if(search.EndTime != DateTime.MinValue)
+            if(search.EndTime != null)
             {
                 whereSql += " AND end_time < @EndTime";
             }

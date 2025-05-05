@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using SportRentHub.Entities.Const;
 using SportRentHub.Entities.DTOs.Booking;
 using SportRentHub.Entities.DTOs.User;
+using SportRentHub.Entities.Enum;
 using SportRentHub.Entities.Extensions;
 using SportRentHub.Services.Interfaces;
 
@@ -115,6 +116,10 @@ namespace SportRentHub.Controllers
 			if (user == null)
 			{
 				return BadRequest(MessageError.InvalidUser);
+			}
+            if(user.Status == (int)AccountStatus.BLOCK)
+			{
+				return BadRequest(MessageError.AccountInActive);
 			}
 			//login
 			var userLogin = await _serviceManager.UserService.Login(loginRequest);

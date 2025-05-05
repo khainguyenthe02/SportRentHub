@@ -17,8 +17,8 @@ namespace SportRentHub.Repositories
         public async Task<bool> Create(User user)
         {
             var result = await _dbService.EditData(
-                "INSERT INTO tbl_user (username, password, fullname, phone_number, address, email, role, create_date, last_login, salt, token) " +
-                "VALUES (@Username, @Password, @Fullname, @PhoneNumber, @Address, @Email, @Role, @CreateDate, @LastLogin, @Salt, @Token)",
+                "INSERT INTO tbl_user (username, password, fullname, phone_number, address, email, role, create_date, last_login, salt, token, status, bank_name, bank_number, bank_account) " +
+                "VALUES (@Username, @Password, @Fullname, @PhoneNumber, @Address, @Email, @Role, @CreateDate, @LastLogin, @Salt, @Token, @Status, @BankName, @BankNumber, @BankAccount)",
                 user);
 
             return result > 0;
@@ -108,7 +108,11 @@ namespace SportRentHub.Repositories
             {
                 whereSql += " AND role = @Role";
             }
-            whereSql += " ORDER BY id DESC";
+			if (search.Status != null)
+			{
+				whereSql += " AND status = @Status";
+			}
+			whereSql += " ORDER BY id DESC";
 
             var userList = await _dbService.GetAll<User>(selectSql + whereSql, search);
             return userList;
@@ -149,7 +153,7 @@ namespace SportRentHub.Repositories
                 updateSql += "email = @Email, ";
                 hasChanged = true;
             }
-            if (update.Role != 0)
+            if (update.Role.HasValue)
             {
                 updateSql += "role = @Role, ";
                 hasChanged = true;
@@ -159,7 +163,27 @@ namespace SportRentHub.Repositories
                 updateSql += "token = @Token, ";
                 hasChanged = true;
             }
-            if (!hasChanged)
+            if (update.Status.HasValue)
+            {
+				updateSql += "status = @Status, ";
+				hasChanged = true;
+			}
+            if(update.BankAccount != null)
+            {
+                updateSql += "bank_account = @BankAccount, ";
+                hasChanged = true;
+            }
+            if (update.BankName != null)
+            {
+                updateSql += "bank_name = @BankName, ";
+                hasChanged = true;
+            }
+            if(update.BankNumber != null)
+            {
+                updateSql += "bank_number = @BankNumber, ";
+                hasChanged = true;
+            }
+			if (!hasChanged)
             {
                 return false;
             }

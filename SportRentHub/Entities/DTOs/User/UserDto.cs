@@ -13,5 +13,9 @@
         public DateTime CreateDate { get; set; }
         public DateTime LastLogin { get; set; }
         public string Token { get; set; }
-    }
+        public int Status { get; set; }
+		public string BankNumber { get; set; }
+		public string BankName { get; set; }
+		public string BankAccount { get; set; }
+	}
 }

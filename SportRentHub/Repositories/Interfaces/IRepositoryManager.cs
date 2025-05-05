@@ -8,5 +8,6 @@
         IBookingRepository BookingRepository { get; }
         IPaymentRepository PaymentRepository { get; }
         IChildCourtRepository ChildCourtRepository { get; }
-    }
+		IReportRepository ReportRepository { get; }
+	}
 }
