@@ -192,12 +192,12 @@ namespace SportRentHub.Controllers
             if (updateUserDto.PhoneNumber != null)
             {
                 var userExist = await _serviceManager.UserService.Search(new UserSearchDto { PhoneNumber = updateUserDto.PhoneNumber });
-                if (userExist != null) return BadRequest("Số điện thoại này đã tồn tại");
+                if (userExist != null && userExist.Any(p => p.Id != updateUserDto.Id)) return BadRequest("Số điện thoại này đã tồn tại");
             }
             if (updateUserDto.Email != null)
             {
                 var userExist = await _serviceManager.UserService.Search(new UserSearchDto { Email = updateUserDto.Email });
-                if (userExist != null) return BadRequest("Email này đã tồn tại");
+                if (userExist != null && userExist.Any(p => p.Id != updateUserDto.Id)) return BadRequest("Email này đã tồn tại");
             }
             if (await _serviceManager.UserService.Update(updateUserDto))
             {
